@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
@@ -8,14 +8,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const { signIn, user } = useAuth();
+  const navigate = useNavigate();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // If already logged in, redirect to home
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
@@ -25,13 +35,13 @@ const Login: React.FC = () => {
     
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      toast.success('Successfully logged in!');
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
       setIsLoading(false);
-      
-      // In a real app, this would save auth token, update context, and redirect
-    }, 1500);
+    }
   };
   
   return (
