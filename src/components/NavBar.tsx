@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ShoppingCart, Search } from 'lucide-react';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import ProfileMenu from './ProfileMenu';
 
 const NavBar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
