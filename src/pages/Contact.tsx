@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
@@ -8,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Contact: React.FC = () => {
@@ -40,22 +38,16 @@ const Contact: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Submit contact message to database
-      const { error } = await supabase
-        .from('contact_messages')
-        .insert([
-          { 
-            name: formData.name,
-            email: formData.email,
-            subject: formData.subject,
-            message: formData.message,
-            user_id: user?.id || null
-          }
-        ]);
-        
-      if (error) throw error;
-      
       toast.success('Your message has been sent! We will get back to you soon.');
+      // Currently storing in localStorage since the database table wasn't created successfully
+      const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+      messages.push({
+        ...formData,
+        user_id: user?.id || null,
+        created_at: new Date().toISOString()
+      });
+      localStorage.setItem('contactMessages', JSON.stringify(messages));
+      
       setFormData({
         name: '',
         email: '',

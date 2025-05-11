@@ -17,9 +17,9 @@ export interface Product {
 
 export interface Review {
   id: string;
-  userId: string;
+  user_id: string;
   username: string;
-  productId: string;
+  product_id: string;
   rating: number;
   comment: string;
   date: string;

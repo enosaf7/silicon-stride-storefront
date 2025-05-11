@@ -33,7 +33,19 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
           .order('date', { ascending: false });
           
         if (error) throw error;
-        setReviews(data || []);
+        
+        // Convert the database response to match our Review type
+        const typedReviews: Review[] = data?.map(item => ({
+          id: item.id,
+          user_id: item.user_id,
+          username: item.username,
+          product_id: item.product_id,
+          rating: item.rating,
+          comment: item.comment,
+          date: item.date
+        })) || [];
+        
+        setReviews(typedReviews);
       } catch (error) {
         console.error('Error fetching reviews:', error);
         toast.error('Failed to load reviews');
@@ -80,25 +92,35 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
         `${userData.first_name || ''} ${userData.last_name || ''}`.trim() : 
         user.email?.split('@')[0] || 'Anonymous';
       
+      const newReview = {
+        user_id: user.id,
+        username,
+        product_id: productId,
+        rating: userReview.rating,
+        comment: userReview.comment,
+        date: new Date().toISOString()
+      };
+      
       const { data, error } = await supabase
         .from('reviews')
-        .insert([
-          {
-            user_id: user.id,
-            username,
-            product_id: productId,
-            rating: userReview.rating,
-            comment: userReview.comment,
-            date: new Date().toISOString()
-          }
-        ])
+        .insert([newReview])
         .select();
         
       if (error) throw error;
       
       // Add the new review to the reviews list
       if (data && data.length > 0) {
-        setReviews([data[0], ...reviews]);
+        const addedReview: Review = {
+          id: data[0].id,
+          user_id: data[0].user_id,
+          username: data[0].username,
+          product_id: data[0].product_id,
+          rating: data[0].rating,
+          comment: data[0].comment,
+          date: data[0].date
+        };
+        
+        setReviews([addedReview, ...reviews]);
       }
       
       toast.success('Review submitted successfully!');
