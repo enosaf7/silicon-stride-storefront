@@ -103,45 +103,45 @@ export const products: Product[] = [
 export const reviews: Review[] = [
   {
     id: '1',
-    userId: 'user1',
+    user_id: 'user1',
     username: 'John D.',
-    productId: '1',
+    product_id: '1',
     rating: 5,
     comment: 'These are the most comfortable running shoes I\'ve ever owned! The silicon cushioning makes a huge difference on long runs.',
     date: '2023-04-15'
   },
   {
     id: '2',
-    userId: 'user2',
+    user_id: 'user2',
     username: 'Sarah M.',
-    productId: '1',
+    product_id: '1',
     rating: 4,
     comment: 'Great shoes! Very comfortable and stylish. I took off one star because they run slightly small.',
     date: '2023-03-28'
   },
   {
     id: '3',
-    userId: 'user3',
+    user_id: 'user3',
     username: 'Michael T.',
-    productId: '2',
+    product_id: '2',
     rating: 5,
     comment: 'These slippers are amazing! Like walking on clouds. Worth every penny.',
     date: '2023-05-02'
   },
   {
     id: '4',
-    userId: 'user4',
+    user_id: 'user4',
     username: 'Lisa R.',
-    productId: '5',
+    product_id: '5',
     rating: 5,
     comment: 'Perfect beach sandals. Comfortable, waterproof, and they look great!',
     date: '2023-02-14'
   },
   {
     id: '5',
-    userId: 'user5',
+    user_id: 'user5',
     username: 'James K.',
-    productId: '3',
+    product_id: '3',
     rating: 4,
     comment: 'Solid boots for city walking. Not quite rugged enough for serious hiking but perfect for daily wear.',
     date: '2023-01-30'
@@ -165,5 +165,5 @@ export const getNewArrivals = (): Product[] => {
 }
 
 export const getProductReviews = (productId: string): Review[] => {
-  return reviews.filter(review => review.productId === productId);
+  return reviews.filter(review => review.product_id === productId);
 }
