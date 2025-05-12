@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, ShoppingBag, Settings, UserCircle } from 'lucide-react';
+import { User, LogOut, ShoppingBag, Settings, UserCircle, LayoutDashboard } from 'lucide-react';
 
 const ProfileMenu: React.FC = () => {
   const { user, signOut, isAdmin } = useAuth();
@@ -63,7 +63,7 @@ const ProfileMenu: React.FC = () => {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link to="/admin" className="flex items-center cursor-pointer">
-                <Settings className="w-4 h-4 mr-2" />
+                <LayoutDashboard className="w-4 h-4 mr-2" />
                 <span>Admin Dashboard</span>
               </Link>
             </DropdownMenuItem>

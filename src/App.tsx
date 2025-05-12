@@ -18,6 +18,13 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// Admin Pages
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import ProductManagement from "./pages/Admin/ProductManagement";
+import OrderManagement from "./pages/Admin/OrderManagement";
+import UserManagement from "./pages/Admin/UserManagement";
+import ReviewManagement from "./pages/Admin/ReviewManagement";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -42,6 +49,34 @@ const App = () => (
               } />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={
+                <ProtectedRoute adminOnly>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/products" element={
+                <ProtectedRoute adminOnly>
+                  <ProductManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/orders" element={
+                <ProtectedRoute adminOnly>
+                  <OrderManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/users" element={
+                <ProtectedRoute adminOnly>
+                  <UserManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/reviews" element={
+                <ProtectedRoute adminOnly>
+                  <ReviewManagement />
+                </ProtectedRoute>
+              } />
+              
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
