@@ -68,21 +68,28 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     queryFn: async () => {
       if (!orderId) return null;
       
+      // Get basic order information
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .select(`
-          *,
-          profiles:user_id (
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('id', orderId)
         .single();
         
       if (orderError) {
         toast.error('Failed to load order details');
         throw orderError;
+      }
+      
+      // Get user profile separately to avoid the relationship error
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', order.user_id)
+        .maybeSingle();
+        
+      if (profileError) {
+        console.error('Error fetching profile data:', profileError);
+        // Continue without profile data instead of failing
       }
       
       // Get order items with product details
@@ -102,14 +109,13 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         throw itemsError;
       }
       
-      // Get user email by querying profiles and auth users info
       // For now, we'll use a placeholder as we can't directly query auth.users
       const email = "customer@example.com"; // In a real scenario, this would be fetched from your auth system
       
       // Construct the order details object safely
       const userInfo: OrderUser = {
-        first_name: order.profiles?.first_name || null,
-        last_name: order.profiles?.last_name || null,
+        first_name: profileData?.first_name || null,
+        last_name: profileData?.last_name || null,
         email: email
       };
       
