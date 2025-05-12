@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import MoMoCheckout from "./pages/MoMoCheckout";
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -45,6 +46,11 @@ const App = () => (
               <Route path="/cart" element={
                 <ProtectedRoute>
                   <Cart />
+                </ProtectedRoute>
+              } />
+              <Route path="/momo-checkout" element={
+                <ProtectedRoute>
+                  <MoMoCheckout />
                 </ProtectedRoute>
               } />
               <Route path="/login" element={<Login />} />

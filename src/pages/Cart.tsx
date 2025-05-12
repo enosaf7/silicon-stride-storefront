@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Minus, Plus, X, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Minus, Plus, X, ShoppingBag, ArrowRight, Phone } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 const Cart: React.FC = () => {
@@ -155,12 +155,21 @@ const Cart: React.FC = () => {
                     </div>
                   </div>
                   
-                  <Link to="/checkout">
-                    <Button className="w-full bg-brand-orange hover:bg-brand-orange/90">
-                      Checkout
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <div className="space-y-3">
+                    <Link to="/checkout">
+                      <Button className="w-full bg-brand-orange hover:bg-brand-orange/90">
+                        Checkout
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                    
+                    <Link to="/momo-checkout">
+                      <Button className="w-full" variant="outline">
+                        Pay with Mobile Money
+                        <Phone className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
