@@ -7,15 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+interface Profile {
+  first_name: string | null;
+  last_name: string | null;
+}
+
 interface Order {
   id: string;
   created_at: string;
   status: string;
   total: number;
-  profiles?: {
-    first_name: string;
-    last_name: string;
-  };
+  profiles?: Profile;
 }
 
 const RecentOrders: React.FC = () => {
@@ -24,23 +26,32 @@ const RecentOrders: React.FC = () => {
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-recent-orders'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the orders
+      const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
-        .select(`
-          id, 
-          created_at, 
-          status, 
-          total,
-          profiles:user_id (
-            first_name,
-            last_name
-          )
-        `)
+        .select('id, created_at, status, total, user_id')
         .order('created_at', { ascending: false })
         .limit(5);
         
-      if (error) throw error;
-      return data as Order[];
+      if (ordersError) throw ordersError;
+      
+      // Then get the profiles separately
+      const enhancedOrders = await Promise.all(
+        ordersData.map(async (order) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', order.user_id)
+            .single();
+            
+          return {
+            ...order,
+            profiles: profileData || { first_name: 'Unknown', last_name: 'User' }
+          };
+        })
+      );
+      
+      return enhancedOrders as Order[];
     }
   });
   
@@ -84,7 +95,7 @@ const RecentOrders: React.FC = () => {
               <div key={order.id} className="flex items-center justify-between border-b pb-3">
                 <div>
                   <p className="font-medium">
-                    {order.profiles?.first_name} {order.profiles?.last_name}
+                    {order.profiles?.first_name || 'Unknown'} {order.profiles?.last_name || 'User'}
                   </p>
                   <p className="text-sm text-gray-500">
                     {new Date(order.created_at).toLocaleDateString()}

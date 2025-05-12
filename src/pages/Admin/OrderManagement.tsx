@@ -10,6 +10,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import OrderDetailsDialog from '@/components/Admin/OrderDetailsDialog';
 
+interface Profile {
+  first_name: string | null;
+  last_name: string | null;
+}
+
 interface Order {
   id: string;
   created_at: string;
@@ -18,10 +23,7 @@ interface Order {
   total: number;
   shipping_address: string;
   payment_intent: string | null;
-  profiles?: {
-    first_name: string;
-    last_name: string;
-  };
+  profiles?: Profile;
 }
 
 const OrderManagement: React.FC = () => {
@@ -32,23 +34,34 @@ const OrderManagement: React.FC = () => {
   const { data: orders, isLoading, refetch } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the orders
+      const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
-        .select(`
-          *,
-          profiles:user_id (
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
         
-      if (error) {
+      if (ordersError) {
         toast.error('Failed to load orders');
-        throw error;
+        throw ordersError;
       }
       
-      return data as Order[];
+      // Then get the profiles separately
+      const enhancedOrders = await Promise.all(
+        ordersData.map(async (order) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', order.user_id)
+            .single();
+            
+          return {
+            ...order,
+            profiles: profileData || { first_name: null, last_name: null }
+          };
+        })
+      );
+      
+      return enhancedOrders as Order[];
     }
   });
   

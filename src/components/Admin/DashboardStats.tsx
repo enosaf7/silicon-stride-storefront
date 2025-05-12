@@ -5,28 +5,38 @@ import { ShoppingBag, Users, Package, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 
+interface StatsResponse {
+  ordersCount: number;
+  productsCount: number;
+  usersCount: number;
+  totalRevenue: number;
+}
+
 const DashboardStats: React.FC = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin-dashboard-stats'],
     queryFn: async () => {
+      // Get counts directly without RPC
       const [
         ordersResponse,
         productsResponse,
         usersResponse,
-        revenueResponse
       ] = await Promise.all([
-        supabase.from('orders').select('count'),
-        supabase.from('products').select('count'),
-        supabase.from('profiles').select('count'),
-        supabase.rpc('get_total_revenue')
+        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
       ]);
+      
+      // For total revenue, we'll sum up the order totals
+      const { data: orders } = await supabase.from('orders').select('total');
+      const totalRevenue = orders ? orders.reduce((sum, order) => sum + Number(order.total), 0) : 0;
       
       return {
         ordersCount: ordersResponse.count || 0,
         productsCount: productsResponse.count || 0,
         usersCount: usersResponse.count || 0,
-        totalRevenue: revenueResponse.data || 0
-      };
+        totalRevenue: totalRevenue
+      } as StatsResponse;
     }
   });
   
