@@ -2,7 +2,7 @@
 export interface Product {
   id: string;
   name: string;
-  category: 'shoes' | 'slippers' | 'boots' | 'sandals';
+  category: string; // Changed from enum to string to match Supabase data
   price: number;
   images: string[];
   description: string;
@@ -13,6 +13,10 @@ export interface Product {
   newArrival?: boolean;
   discount?: number;
   rating?: number;
+  // Add fields that might come from Supabase
+  created_at?: string;
+  updated_at?: string;
+  new_arrival?: boolean;
 }
 
 export interface Review {
@@ -26,10 +30,14 @@ export interface Review {
 }
 
 export interface CartItem {
-  productId: string;
+  id?: string;
+  productId?: string;
+  product_id?: string; // For Supabase compatibility
   quantity: number;
   size: number;
   color?: string;
+  product?: Product;
+  user_id?: string;
 }
 
 export interface User {
