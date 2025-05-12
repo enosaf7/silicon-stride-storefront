@@ -106,12 +106,16 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       // For now, we'll use a placeholder as we can't directly query auth.users
       const email = "customer@example.com"; // In a real scenario, this would be fetched from your auth system
       
+      // Construct the order details object safely
+      const userInfo: OrderUser = {
+        first_name: order.profiles?.first_name || null,
+        last_name: order.profiles?.last_name || null,
+        email: email
+      };
+      
       return {
         ...order,
-        user: {
-          ...(order.profiles || { first_name: null, last_name: null }),
-          email: email
-        },
+        user: userInfo,
         items: items || [],
       } as OrderDetails;
     },
