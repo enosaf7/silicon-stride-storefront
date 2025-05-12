@@ -27,7 +27,7 @@ const NavBar: React.FC = () => {
         <div className="flex justify-between items-center">
           {/* Logo / Brand */}
           <Link to="/" className="text-2xl font-bold text-gray-800">
-            Silicon
+            Jhoey-Silicon
           </Link>
           
           {/* Desktop Navigation */}
