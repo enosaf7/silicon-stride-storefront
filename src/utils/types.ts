@@ -38,3 +38,10 @@ export interface User {
   email: string;
   role: 'user' | 'admin';
 }
+
+export interface SearchFilters {
+  query: string;
+  category?: string;
+  priceRange?: [number, number];
+  sortBy?: 'price-asc' | 'price-desc' | 'rating' | 'newest';
+}

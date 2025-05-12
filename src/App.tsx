@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
+import { CartProvider } from "./contexts/CartContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -26,23 +27,25 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={
-              <ProtectedRoute>
-                <Cart />
-              </ProtectedRoute>
-            } />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <CartProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={
+                <ProtectedRoute>
+                  <Cart />
+                </ProtectedRoute>
+              } />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

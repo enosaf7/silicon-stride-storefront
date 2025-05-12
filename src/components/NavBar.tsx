@@ -4,11 +4,14 @@ import { Link } from 'react-router-dom';
 import { Menu, X, ShoppingCart, Search } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ProfileMenu from './ProfileMenu';
+import SearchBar from './SearchBar';
+import { useCart } from '@/contexts/CartContext';
 
 const NavBar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { itemCount } = useCart();
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -56,9 +59,11 @@ const NavBar: React.FC = () => {
             {/* Shopping Cart */}
             <Link to="/cart" className="text-gray-700 hover:text-brand-orange transition-colors relative">
               <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-2 -right-2 bg-brand-orange text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                0
-              </span>
+              {itemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-brand-orange text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                  {itemCount > 9 ? '9+' : itemCount}
+                </span>
+              )}
             </Link>
             
             {/* Profile Menu */}
@@ -93,24 +98,7 @@ const NavBar: React.FC = () => {
         )}
         
         {/* Search Bar */}
-        {isSearchOpen && (
-          <div className="pt-3 pb-2">
-            <div className="relative">
-              <input 
-                type="text" 
-                placeholder="Search for products..." 
-                className="w-full p-2 pl-10 pr-4 border border-gray-300 rounded"
-              />
-              <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <button 
-                onClick={toggleSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        )}
+        <SearchBar isOpen={isSearchOpen} toggleSearch={toggleSearch} />
       </div>
     </nav>
   );

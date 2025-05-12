@@ -1,88 +1,37 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Minus, Plus, X, ShoppingBag, ArrowRight } from 'lucide-react';
-import { products } from '@/data/products';
-import { toast } from 'sonner';
-
-// Dummy cart data
-const initialCartItems = [
-  {
-    productId: '1',
-    quantity: 1,
-    size: 9,
-    color: '#000000',
-  },
-  {
-    productId: '2',
-    quantity: 2,
-    size: 8,
-    color: '#F97316',
-  }
-];
+import { useCart } from '@/contexts/CartContext';
 
 const Cart: React.FC = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const { 
+    cartItems, 
+    isLoading, 
+    updateQuantity, 
+    removeFromCart,
+    subtotal,
+    shippingCost,
+    totalCost,
+    itemCount
+  } = useCart();
   
-  // Get full product data for cart items
-  const cartProducts = cartItems.map(item => {
-    const product = products.find(p => p.id === item.productId);
-    return {
-      ...item,
-      product,
-    };
-  });
-  
-  // Calculate subtotal
-  const subtotal = cartProducts.reduce((total, item) => {
-    if (!item.product) return total;
-    
-    const itemPrice = item.product.discount
-      ? item.product.price * (1 - item.product.discount / 100)
-      : item.product.price;
-      
-    return total + (itemPrice * item.quantity);
-  }, 0);
-  
-  // Shipping cost calculation (simplified)
-  const shippingCost = subtotal > 100 ? 0 : 9.99;
-  
-  // Total cost
-  const totalCost = subtotal + shippingCost;
-  
-  // Update quantity
-  const updateQuantity = (productId: string, newQuantity: number) => {
-    const product = products.find(p => p.id === productId);
-    
-    if (!product) return;
-    
-    if (newQuantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-    
-    if (newQuantity > product.stock) {
-      toast.error(`Only ${product.stock} items available`);
-      return;
-    }
-    
-    setCartItems(prev => 
-      prev.map(item => 
-        item.productId === productId
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
+  if (isLoading) {
+    return (
+      <>
+        <NavBar />
+        <main className="py-12 min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Loading your cart...</h1>
+          </div>
+        </main>
+        <Footer />
+      </>
     );
-  };
-  
-  // Remove item from cart
-  const removeItem = (productId: string) => {
-    setCartItems(prev => prev.filter(item => item.productId !== productId));
-    toast.success('Item removed from cart');
-  };
+  }
   
   return (
     <>
@@ -98,12 +47,12 @@ const Cart: React.FC = () => {
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                   {/* Cart Header */}
                   <div className="p-6 border-b border-gray-200">
-                    <h2 className="text-xl font-semibold">Cart Items ({cartItems.length})</h2>
+                    <h2 className="text-xl font-semibold">Cart Items ({itemCount})</h2>
                   </div>
                   
                   {/* Cart Items */}
                   <div className="divide-y divide-gray-200">
-                    {cartProducts.map(item => {
+                    {cartItems.map((item) => {
                       if (!item.product) return null;
                       
                       const itemPrice = item.product.discount
@@ -111,7 +60,7 @@ const Cart: React.FC = () => {
                         : item.product.price;
                         
                       return (
-                        <div key={item.productId} className="p-6 flex flex-col md:flex-row">
+                        <div key={item.id} className="p-6 flex flex-col md:flex-row">
                           {/* Product Image */}
                           <div className="md:w-24 md:h-24 rounded overflow-hidden mb-4 md:mb-0">
                             <img 
@@ -126,7 +75,7 @@ const Cart: React.FC = () => {
                             <div className="flex justify-between">
                               <div>
                                 <h3 className="font-medium text-lg">
-                                  <Link to={`/product/${item.productId}`} className="hover:text-brand-orange">
+                                  <Link to={`/product/${item.product_id}`} className="hover:text-brand-orange">
                                     {item.product.name}
                                   </Link>
                                 </h3>
@@ -140,7 +89,7 @@ const Cart: React.FC = () => {
                               </div>
                               
                               <button 
-                                onClick={() => removeItem(item.productId)}
+                                onClick={() => removeFromCart(item.id)}
                                 className="text-gray-400 hover:text-red-500"
                               >
                                 <X className="h-5 w-5" />
@@ -151,7 +100,7 @@ const Cart: React.FC = () => {
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4">
                               <div className="flex items-center mb-3 sm:mb-0">
                                 <button
-                                  onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                   className="w-8 h-8 border border-gray-300 rounded-l-md flex items-center justify-center"
                                 >
                                   <Minus className="h-3 w-3" />
@@ -160,8 +109,9 @@ const Cart: React.FC = () => {
                                   {item.quantity}
                                 </div>
                                 <button
-                                  onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                   className="w-8 h-8 border border-gray-300 rounded-r-md flex items-center justify-center"
+                                  disabled={item.quantity >= (item.product?.stock || 0)}
                                 >
                                   <Plus className="h-3 w-3" />
                                 </button>

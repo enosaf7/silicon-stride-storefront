@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import { products } from '@/data/products';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Star, ShoppingCart } from 'lucide-react';
@@ -11,11 +10,15 @@ import { toast } from 'sonner';
 import ReviewSection from '@/components/ReviewSection';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const [product, setProduct] = useState(products.find(p => p.id === id));
+  const { addToCart } = useCart();
+  
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -23,14 +26,50 @@ const ProductDetail: React.FC = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   
   useEffect(() => {
-    // Reset selections when product changes
-    if (product) {
-      setSelectedSize(null);
-      setSelectedColor(null);
-      setQuantity(1);
-      setCurrentImage(0);
-    }
-  }, [product]);
+    const fetchProduct = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          setProduct(data);
+          setSelectedSize(null);
+          setSelectedColor(null);
+          setQuantity(1);
+          setCurrentImage(0);
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        toast.error('Failed to load product details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <>
+        <NavBar />
+        <main className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-lg">Loading product...</h1>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   if (!product) {
     return (
@@ -76,24 +115,14 @@ const ProductDetail: React.FC = () => {
     setIsAddingToCart(true);
     
     try {
-      const { error } = await supabase
-        .from('cart_items')
-        .insert([
-          { 
-            user_id: user.id,
-            product_id: product.id,
-            quantity,
-            size: selectedSize,
-            color: selectedColor
-          }
-        ]);
-        
-      if (error) throw error;
-      
-      toast.success(`${product.name} added to cart!`);
+      await addToCart(
+        product.id,
+        quantity,
+        selectedSize,
+        selectedColor || undefined
+      );
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error('Failed to add item to cart');
     } finally {
       setIsAddingToCart(false);
     }
@@ -118,7 +147,7 @@ const ProductDetail: React.FC = () => {
                 </div>
                 
                 <div className="grid grid-cols-4 gap-2">
-                  {product.images.map((image, index) => (
+                  {product.images.map((image: string, index: number) => (
                     <div 
                       key={index}
                       className={`aspect-square bg-gray-100 rounded cursor-pointer ${
@@ -188,7 +217,7 @@ const ProductDetail: React.FC = () => {
                 <div className="mb-6">
                   <h2 className="font-semibold mb-2">Size <span className="text-red-500">*</span></h2>
                   <div className="flex flex-wrap gap-2">
-                    {product.sizes.map((size) => (
+                    {product.sizes.map((size: number) => (
                       <button
                         key={size}
                         className={`px-4 py-2 border rounded-md ${
@@ -209,7 +238,7 @@ const ProductDetail: React.FC = () => {
                   <div className="mb-6">
                     <h2 className="font-semibold mb-2">Color <span className="text-red-500">*</span></h2>
                     <div className="flex flex-wrap gap-2">
-                      {product.colors.map((color) => (
+                      {product.colors.map((color: string) => (
                         <button
                           key={color}
                           className={`w-8 h-8 rounded-full border-2 ${
@@ -249,7 +278,7 @@ const ProductDetail: React.FC = () => {
                   <Button 
                     onClick={handleAddToCart}
                     className="bg-brand-orange hover:bg-brand-orange/90 flex-1 gap-2"
-                    disabled={isAddingToCart}
+                    disabled={isAddingToCart || product.stock <= 0}
                   >
                     <ShoppingCart className="h-4 w-4" />
                     {isAddingToCart ? 'Adding...' : 'Add to Cart'}
