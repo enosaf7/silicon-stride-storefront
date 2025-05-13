@@ -56,43 +56,28 @@ const UserMessages = () => {
     fetchAdminId();
   }, []);
 
-  // Fetch messages using RPC to work around type issues
-  const { data: messages = [], refetch: refetchMessages } = useQuery({
+  // Fetch messages using RPC to avoid type issues
+  const { data: messagesData, refetch: refetchMessages } = useQuery({
     queryKey: ['user-messages', user?.id],
     queryFn: async () => {
       if (!user) return [] as Message[];
 
-      // Use a basic query without joins to avoid type issues
       const { data, error } = await supabase
-        .rpc('get_user_messages', { user_id: user.id })
-        .returns<Message[]>();
+        .rpc('get_user_messages', { user_id: user.id });
 
       if (error) {
         toast.error('Failed to load messages');
         throw error;
       }
       
-      // Mark messages as read when opened
-      if (open) {
-        const unreadMessages = data.filter(
-          msg => msg.receiver_id === user.id && !msg.is_read
-        );
-        
-        if (unreadMessages.length > 0) {
-          // Use a custom RPC function to mark messages as read
-          await supabase
-            .rpc('mark_messages_as_read', {
-              user_id: user.id,
-              message_ids: unreadMessages.map(msg => msg.id)
-            });
-        }
-      }
-      
-      return data;
+      return data as Message[];
     },
     enabled: !!user,
     refetchInterval: open ? 5000 : 30000, // Refresh every 5s when open, otherwise every 30s
   });
+
+  // Safely access messages data
+  const messages = messagesData || [];
 
   // Count unread messages
   useEffect(() => {
@@ -124,7 +109,7 @@ const UserMessages = () => {
           });
       }
     }
-  }, [open, user, messages]);
+  }, [open, user, messages, refetchMessages]);
 
   const sendMessage = async () => {
     if (!user || !adminId || !newMessage.trim()) return;
@@ -132,22 +117,14 @@ const UserMessages = () => {
     setIsSubmitting(true);
     
     try {
-      // Use direct REST API call to avoid type issues
-      const { error } = await supabase.rest.post(
-        '/rest/v1/messages',
-        {
+      const { error } = await supabase
+        .from('messages')
+        .insert({
           sender_id: user.id,
           receiver_id: adminId,
           content: newMessage,
           is_read: false
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          }
-        }
-      );
+        });
         
       if (error) throw error;
       

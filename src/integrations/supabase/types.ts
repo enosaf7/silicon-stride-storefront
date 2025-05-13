@@ -279,12 +279,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_conversation_messages: {
+        Args: { user1: string; user2: string }
+        Returns: {
+          id: string
+          sender_id: string
+          receiver_id: string
+          content: string
+          created_at: string
+          is_read: boolean
+        }[]
+      }
+      get_user_messages: {
+        Args: { user_id: string }
+        Returns: {
+          id: string
+          sender_id: string
+          receiver_id: string
+          content: string
+          created_at: string
+          is_read: boolean
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      mark_messages_as_read: {
+        Args: { user_id: string; message_ids: string[] }
+        Returns: undefined
       }
     }
     Enums: {
