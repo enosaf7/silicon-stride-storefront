@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import ProfileMenu from './ProfileMenu';
 import SearchBar from './SearchBar';
 import { useCart } from '@/contexts/CartContext';
+import UserMessages from './UserMessages';
 
 const NavBar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -27,7 +28,7 @@ const NavBar: React.FC = () => {
         <div className="flex justify-between items-center">
           {/* Logo / Brand */}
           <Link to="/" className="text-2xl font-bold text-gray-800">
-            Jhoey-Silicon
+            JE's Palace
           </Link>
           
           {/* Desktop Navigation */}
@@ -65,6 +66,9 @@ const NavBar: React.FC = () => {
                 </span>
               )}
             </Link>
+            
+            {/* User Messages */}
+            <UserMessages />
             
             {/* Profile Menu */}
             <ProfileMenu />

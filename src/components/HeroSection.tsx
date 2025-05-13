@@ -11,11 +11,6 @@ const HeroSection: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center gap-8">
           {/* Content */}
           <div className="md:w-1/2 space-y-6">
-            <div>
-              <span className="inline-block bg-brand-orange bg-opacity-20 text-brand-orange px-3 py-1 rounded-full text-sm font-medium">
-                New Collection
-              </span>
-            </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               Experience The Future Of <span className="text-brand-orange">Footwear</span>
             </h1>
@@ -39,8 +34,8 @@ const HeroSection: React.FC = () => {
           <div className="md:w-1/2 relative">
             <div className="bg-brand-orange rounded-full w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 absolute -z-10 top-4 right-4"></div>
             <img 
-              src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" 
-              alt="Jhoey-Silicon Shoes" 
+              src="https://images.unsplash.com/photo-1543665545-a5a845c3e2dc" 
+              alt="JE's Palace Executive Shoes" 
               className="w-full h-auto rounded-lg shadow-lg"
             />
           </div>

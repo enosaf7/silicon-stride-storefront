@@ -1,11 +1,14 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Minus, Plus, X, ShoppingBag, ArrowRight, Phone } from 'lucide-react';
+import { Minus, Plus, X, ShoppingBag, CheckCircle } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Cart: React.FC = () => {
   const { 
@@ -16,8 +19,13 @@ const Cart: React.FC = () => {
     subtotal,
     shippingCost,
     totalCost,
-    itemCount
+    itemCount,
+    clearCart
   } = useCart();
+  
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   if (isLoading) {
     return (
@@ -32,6 +40,94 @@ const Cart: React.FC = () => {
       </>
     );
   }
+
+  const handlePlaceOrder = async () => {
+    if (!user) {
+      toast.error('Please log in to place an order');
+      navigate('/login');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      toast.error('Your cart is empty');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // 1. Create order in database
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          total: totalCost,
+          shipping_address: 'Default Address', // This would come from user profile or form
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // 2. Create order items
+      const orderItems = cartItems.map(item => {
+        const itemPrice = item.product?.discount
+          ? item.product.price * (1 - item.product.discount / 100)
+          : item.product?.price || 0;
+
+        return {
+          order_id: orderData.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color,
+          price: itemPrice
+        };
+      });
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      // 3. Send invoice emails
+      const { data: invoiceData, error: invoiceError } = await supabase.functions
+        .invoke('send-invoice', {
+          body: { 
+            orderId: orderData.id,
+            userId: user.id
+          }
+        });
+
+      if (invoiceError) throw invoiceError;
+
+      // 4. Clear cart after successful order
+      await clearCart();
+
+      // 5. Show success message and redirect
+      toast.success('Order placed successfully!');
+      
+      // WhatsApp sharing option
+      if (invoiceData?.whatsappMessage) {
+        const whatsappUrl = `https://wa.me/qr/YLDXJYXDR4LHA1?text=${invoiceData.whatsappMessage}`;
+        window.open(whatsappUrl, '_blank');
+      }
+
+      // Redirect back to home page
+      setTimeout(() => {
+        navigate('/');
+        toast.info('Order confirmation has been sent to your email');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error placing order:', error);
+      toast.error('Failed to place order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   return (
     <>
@@ -155,21 +251,25 @@ const Cart: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="space-y-3">
-                    <Link to="/checkout">
-                      <Button className="w-full bg-brand-orange hover:bg-brand-orange/90">
-                        Checkout
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                    
-                    <Link to="/momo-checkout">
-                      <Button className="w-full" variant="outline">
-                        Pay with Mobile Money
-                        <Phone className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
+                  <Button 
+                    className="w-full bg-brand-orange hover:bg-brand-orange/90"
+                    onClick={handlePlaceOrder}
+                    disabled={isSubmitting || cartItems.length === 0}
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center">
+                        <span className="animate-spin mr-2">⟳</span> Processing...
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <CheckCircle className="mr-2 h-4 w-4" /> Place Order
+                      </span>
+                    )}
+                  </Button>
+                  
+                  <p className="mt-4 text-sm text-gray-500 text-center">
+                    By placing an order, you'll receive an invoice via email.
+                  </p>
                 </div>
               </div>
             </div>

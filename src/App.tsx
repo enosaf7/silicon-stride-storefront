@@ -17,7 +17,6 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import MoMoCheckout from "./pages/MoMoCheckout";
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -25,6 +24,7 @@ import ProductManagement from "./pages/Admin/ProductManagement";
 import OrderManagement from "./pages/Admin/OrderManagement";
 import UserManagement from "./pages/Admin/UserManagement";
 import ReviewManagement from "./pages/Admin/ReviewManagement";
+import UserMessaging from "./pages/Admin/UserMessaging";
 
 const queryClient = new QueryClient();
 
@@ -46,11 +46,6 @@ const App = () => (
               <Route path="/cart" element={
                 <ProtectedRoute>
                   <Cart />
-                </ProtectedRoute>
-              } />
-              <Route path="/momo-checkout" element={
-                <ProtectedRoute>
-                  <MoMoCheckout />
                 </ProtectedRoute>
               } />
               <Route path="/login" element={<Login />} />
@@ -80,6 +75,11 @@ const App = () => (
               <Route path="/admin/reviews" element={
                 <ProtectedRoute adminOnly>
                   <ReviewManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/messages" element={
+                <ProtectedRoute adminOnly>
+                  <UserMessaging />
                 </ProtectedRoute>
               } />
               

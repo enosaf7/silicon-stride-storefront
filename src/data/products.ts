@@ -4,46 +4,46 @@ import { Product, Review } from '../utils/types';
 export const products: Product[] = [
   {
     id: '1',
-    name: 'Silicon Runner Pro',
+    name: 'Executive Oxford Classic',
     category: 'shoes',
-    price: 129.99,
+    price: 199.99,
     images: [
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff',
-      'https://images.unsplash.com/photo-1608231387042-66d1773070a5'
+      'https://images.unsplash.com/photo-1560343090-f0409e92791a',
+      'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4'
     ],
-    description: 'Our flagship running shoe featuring advanced silicon cushioning for maximum comfort and performance. Perfect for long-distance runners and everyday athletes.',
+    description: 'Our flagship executive oxford shoes featuring advanced silicon cushioning for maximum comfort and professional style. Perfect for business meetings and formal events.',
     sizes: [7, 8, 9, 10, 11, 12],
-    colors: ['#000000', '#FFFFFF', '#F97316'],
+    colors: ['#000000', '#5C4033', '#8B4513'],
     stock: 50,
     featured: true,
     rating: 4.8,
   },
   {
     id: '2',
-    name: 'Comfort Step Slippers',
-    category: 'slippers',
-    price: 49.99,
+    name: 'Italian Leather Derby',
+    category: 'shoes',
+    price: 239.99,
     images: [
-      'https://images.unsplash.com/photo-1631624215749-b10b3dd7bca7',
-      'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa'
+      'https://images.unsplash.com/photo-1543665545-a5a845c3e2dc',
+      'https://images.unsplash.com/photo-1531310197839-ccf54634509e'
     ],
-    description: 'Premium home slippers with silicon-infused memory foam for the ultimate comfort. Your feet deserve this luxury after a long day.',
+    description: 'Premium Italian leather derby shoes with silicon-infused memory foam for the ultimate comfort. Your feet deserve this luxury for long business days.',
     sizes: [6, 7, 8, 9, 10, 11],
-    colors: ['#000000', '#F97316', '#964B00'],
+    colors: ['#000000', '#5C4033', '#964B00'],
     stock: 75,
     featured: true,
     rating: 4.9,
   },
   {
     id: '3',
-    name: 'Urban Trek Boots',
-    category: 'boots',
-    price: 159.99,
+    name: 'Formal Wing-tip Brogue',
+    category: 'shoes',
+    price: 259.99,
     images: [
-      'https://images.unsplash.com/photo-1520639888713-7851133b1ed0',
-      'https://images.unsplash.com/photo-1605812860427-4024433a70fd'
+      'https://images.unsplash.com/photo-1614252369475-531eba835eb1',
+      'https://images.unsplash.com/photo-1678732841792-159fb692854b'
     ],
-    description: 'Rugged and stylish boots with silicon-reinforced soles for superior grip and durability. Perfect for urban adventures and light hiking.',
+    description: 'Elegant and sophisticated brogue shoes with silicon-reinforced soles for superior comfort and durability. Perfect for weddings and special occasions.',
     sizes: [7, 8, 9, 10, 11, 12],
     colors: ['#000000', '#964B00'],
     stock: 30,
@@ -52,16 +52,16 @@ export const products: Product[] = [
   },
   {
     id: '4',
-    name: 'Silicon Flex Sport',
+    name: 'Business Loafer Pro',
     category: 'shoes',
-    price: 119.99,
+    price: 189.99,
     images: [
-      'https://images.unsplash.com/photo-1539185441755-769473a23570',
-      'https://images.unsplash.com/photo-1607522370275-f14206abe5d3'
+      'https://images.unsplash.com/photo-1533867617858-e7b97e060509',
+      'https://images.unsplash.com/photo-1561997847-77a236bd864f'
     ],
-    description: 'Lightweight and flexible sports shoes designed for intense training and gym sessions. Features our patented Silicon Flex technology.',
+    description: 'Lightweight and flexible business loafers designed for comfort during long workdays. Features our patented Silicon Flex technology.',
     sizes: [7, 8, 9, 10, 11],
-    colors: ['#000000', '#F97316', '#3B82F6'],
+    colors: ['#000000', '#964B00', '#8B4513'],
     stock: 40,
     newArrival: true,
     discount: 15,
@@ -69,25 +69,25 @@ export const products: Product[] = [
   },
   {
     id: '5',
-    name: 'Beach Comfort Sandals',
-    category: 'sandals',
-    price: 59.99,
+    name: 'Premium Monk Strap',
+    category: 'shoes',
+    price: 219.99,
     images: [
-      'https://images.unsplash.com/photo-1603487742131-4160ec999306',
-      'https://images.unsplash.com/photo-1562273138-f46be4ebdf33'
+      'https://images.unsplash.com/photo-1613592743574-3447394077dd',
+      'https://images.unsplash.com/photo-1614252235429-a05507e8118b'
     ],
-    description: 'Waterproof sandals with silicon straps and cushioned footbed. Perfect for beach days and summer adventures.',
+    description: 'Distinguished monk strap shoes with silicon cushioned footbed. Perfect for making a statement in the boardroom.',
     sizes: [6, 7, 8, 9, 10, 11, 12],
-    colors: ['#000000', '#F97316', '#3B82F6', '#FFFFFF'],
+    colors: ['#000000', '#5C4033', '#8B4513', '#FFFFFF'],
     stock: 60,
     featured: true,
     rating: 4.5,
   },
   {
     id: '6',
-    name: 'Business Comfort Oxfords',
+    name: 'Executive Comfort Oxfords',
     category: 'shoes',
-    price: 149.99,
+    price: 249.99,
     images: [
       'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4',
       'https://images.unsplash.com/photo-1609188076864-c35269136b09'

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -25,6 +25,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Product } from '@/utils/types';
+import { FileImage, Upload, X } from 'lucide-react';
 
 const productSchema = z.object({
   name: z.string().min(2, { message: 'Product name must be at least 2 characters.' }),
@@ -35,7 +36,7 @@ const productSchema = z.object({
   featured: z.boolean().default(false),
   newArrival: z.boolean().default(false),
   discount: z.coerce.number().min(0).max(100).optional().default(0),
-  images: z.string().array().min(1, { message: 'At least one image URL is required.' }),
+  images: z.any().array().min(1, { message: 'At least one image is required.' }),
   sizes: z.coerce.number().array().min(1, { message: 'At least one size is required.' }),
   colors: z.string().array().min(1, { message: 'At least one color is required.' }),
 });
@@ -67,7 +68,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
           featured: product?.featured || false,
           newArrival: product?.newArrival || product?.new_arrival || false,
           discount: product?.discount || 0,
-          images: product?.images || [''],
+          images: product?.images || [],
           sizes: product?.sizes || [40],
           colors: product?.colors || ['Black'],
         }
@@ -80,7 +81,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
           featured: false,
           newArrival: false,
           discount: 0,
-          images: [''],
+          images: [],
           sizes: [40],
           colors: ['Black'],
         },
@@ -88,6 +89,40 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
   
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     try {
+      // Process image uploads if there are File objects
+      const imageURLs = await Promise.all(
+        values.images.map(async (image: File | string) => {
+          // If image is already a URL string, return it
+          if (typeof image === 'string') {
+            return image;
+          }
+          
+          // If it's a File object, upload it to Supabase Storage
+          if (image instanceof File) {
+            const fileName = `${Date.now()}-${image.name}`;
+            const { data, error } = await supabase.storage
+              .from('product-images')
+              .upload(`products/${fileName}`, image);
+              
+            if (error) {
+              throw error;
+            }
+            
+            // Get the public URL
+            const { data: publicURL } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(`products/${fileName}`);
+              
+            return publicURL.publicUrl;
+          }
+          
+          return '';
+        })
+      );
+      
+      // Filter out any empty strings
+      const filteredImageURLs = imageURLs.filter(url => url);
+      
       if (isEditing) {
         // Update existing product
         const { error } = await supabase
@@ -101,7 +136,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
             featured: values.featured,
             new_arrival: values.newArrival,
             discount: values.discount || null,
-            images: values.images,
+            images: filteredImageURLs,
             sizes: values.sizes,
             colors: values.colors,
           })
@@ -123,7 +158,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
             featured: values.featured,
             new_arrival: values.newArrival,
             discount: values.discount || null,
-            images: values.images,
+            images: filteredImageURLs,
             sizes: values.sizes,
             colors: values.colors,
           });
@@ -139,27 +174,39 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
     }
   };
   
-  // Manage image URLs
-  const [imageInputs, setImageInputs] = React.useState<string[]>(
-    form.getValues().images.length ? form.getValues().images : ['']
+  // Handle file upload
+  const [uploadedFiles, setUploadedFiles] = React.useState<(File | string)[]>(
+    form.getValues().images || []
   );
   
-  const addImageInput = () => {
-    setImageInputs([...imageInputs, '']);
+  const handleFileDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const newFiles = Array.from(e.dataTransfer.files);
+        const updatedFiles = [...uploadedFiles, ...newFiles];
+        setUploadedFiles(updatedFiles);
+        form.setValue('images', updatedFiles, { shouldValidate: true });
+      }
+    },
+    [uploadedFiles, form]
+  );
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      const updatedFiles = [...uploadedFiles, ...newFiles];
+      setUploadedFiles(updatedFiles);
+      form.setValue('images', updatedFiles, { shouldValidate: true });
+    }
   };
   
-  const removeImageInput = (index: number) => {
-    const newInputs = [...imageInputs];
-    newInputs.splice(index, 1);
-    setImageInputs(newInputs);
-    form.setValue('images', newInputs.filter(Boolean));
-  };
-  
-  const updateImageInput = (index: number, value: string) => {
-    const newInputs = [...imageInputs];
-    newInputs[index] = value;
-    setImageInputs(newInputs);
-    form.setValue('images', newInputs.filter(Boolean));
+  const removeFile = (indexToRemove: number) => {
+    const updatedFiles = uploadedFiles.filter((_, index) => index !== indexToRemove);
+    setUploadedFiles(updatedFiles);
+    form.setValue('images', updatedFiles, { shouldValidate: true });
   };
   
   // Manage size inputs
@@ -175,14 +222,14 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
     const newInputs = [...sizeInputs];
     newInputs.splice(index, 1);
     setSizeInputs(newInputs);
-    form.setValue('sizes', newInputs.filter((size) => size > 0));
+    form.setValue('sizes', newInputs.filter((size) => size > 0), { shouldValidate: true });
   };
   
   const updateSizeInput = (index: number, value: number) => {
     const newInputs = [...sizeInputs];
     newInputs[index] = value;
     setSizeInputs(newInputs);
-    form.setValue('sizes', newInputs.filter((size) => size > 0));
+    form.setValue('sizes', newInputs.filter((size) => size > 0), { shouldValidate: true });
   };
   
   // Manage color inputs
@@ -198,14 +245,14 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
     const newInputs = [...colorInputs];
     newInputs.splice(index, 1);
     setColorInputs(newInputs);
-    form.setValue('colors', newInputs.filter(Boolean));
+    form.setValue('colors', newInputs.filter(Boolean), { shouldValidate: true });
   };
   
   const updateColorInput = (index: number, value: string) => {
     const newInputs = [...colorInputs];
     newInputs[index] = value;
     setColorInputs(newInputs);
-    form.setValue('colors', newInputs.filter(Boolean));
+    form.setValue('colors', newInputs.filter(Boolean), { shouldValidate: true });
   };
   
   return (
@@ -282,6 +329,93 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
               )}
             />
             
+            {/* Image Upload */}
+            <FormField
+              control={form.control}
+              name="images"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Product Images</FormLabel>
+                  <FormControl>
+                    <div 
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={handleFileDrop}
+                    >
+                      <FileImage className="h-10 w-10 text-gray-400 mb-3" />
+                      <p className="text-sm text-gray-600 mb-1">
+                        Drag and drop product images here or
+                      </p>
+                      <div className="relative">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="mt-2"
+                        >
+                          <Upload className="h-4 w-4 mr-2" /> Browse Files
+                        </Button>
+                        <input
+                          type="file"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          accept="image/*"
+                          multiple
+                          onChange={handleFileChange}
+                        />
+                      </div>
+                    </div>
+                  </FormControl>
+                  
+                  {/* Display uploaded files */}
+                  {uploadedFiles.length > 0 && (
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                      {uploadedFiles.map((file, index) => (
+                        <div 
+                          key={index} 
+                          className="relative bg-gray-100 rounded-md p-2 flex items-center"
+                        >
+                          <div className="h-16 w-16 overflow-hidden rounded-md mr-2">
+                            {typeof file === 'string' ? (
+                              <img 
+                                src={file} 
+                                alt={`Image ${index + 1}`}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <img 
+                                src={URL.createObjectURL(file)} 
+                                alt={`Image ${index + 1}`}
+                                className="h-full w-full object-cover"
+                              />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {typeof file === 'string' 
+                                ? file.split('/').pop() 
+                                : file.name
+                              }
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {typeof file !== 'string' && (file.size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                          <button 
+                            type="button"
+                            className="text-gray-500 hover:text-red-500"
+                            onClick={() => removeFile(index)}
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Stock */}
               <FormField
@@ -350,43 +484,6 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
               />
             </div>
             
-            {/* Image URLs */}
-            <div>
-              <FormLabel>Product Images</FormLabel>
-              <div className="space-y-2 mt-2">
-                {imageInputs.map((imageUrl, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      placeholder="Enter image URL"
-                      value={imageUrl}
-                      onChange={(e) => updateImageInput(index, e.target.value)}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => removeImageInput(index)}
-                      disabled={imageInputs.length === 1}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-2"
-                onClick={addImageInput}
-              >
-                Add Another Image
-              </Button>
-              {form.formState.errors.images && (
-                <p className="text-sm font-medium text-destructive mt-2">
-                  {form.formState.errors.images.message}
-                </p>
-              )}
-            </div>
-            
             {/* Sizes */}
             <div>
               <FormLabel>Available Sizes</FormLabel>
@@ -420,7 +517,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
               </Button>
               {form.formState.errors.sizes && (
                 <p className="text-sm font-medium text-destructive mt-2">
-                  {form.formState.errors.sizes.message}
+                  {form.formState.errors.sizes.message as string}
                 </p>
               )}
             </div>
@@ -457,7 +554,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
               </Button>
               {form.formState.errors.colors && (
                 <p className="text-sm font-medium text-destructive mt-2">
-                  {form.formState.errors.colors.message}
+                  {form.formState.errors.colors.message as string}
                 </p>
               )}
             </div>

@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
           {/* Brand Section */}
           <div>
             <h3 className="text-xl mb-4 font-bold">
-              <span className="text-brand-orange">JHOEY</span>-SILICON
+              <span className="text-brand-orange">JE's</span> PALACE
             </h3>
             <p className="text-gray-300 mb-4">
               Premium footwear with advanced silicon technology for unmatched comfort and style.
@@ -104,7 +104,7 @@ const Footer: React.FC = () => {
         {/* Bottom Section */}
         <div className="pt-6 border-t border-gray-700 text-center text-gray-400 text-sm">
           <p>
-            © {currentYear} Jhoey-Silicon Shoes. All rights reserved.
+            © {currentYear} JE's Palace Shoes. All rights reserved.
           </p>
         </div>
       </div>
