@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,12 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { LogOut, User, Settings, HelpCircle } from 'lucide-react';
+import { LogOut, User, Settings, HelpCircle, LayoutDashboard } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from '@/integrations/supabase/client';
 
 const ProfileMenu: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [firstName, setFirstName] = useState<string | null>(null);
@@ -99,6 +100,17 @@ const ProfileMenu: React.FC = () => {
             <span>Settings</span>
           </Link>
         </DropdownMenuItem>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/admin" className="flex items-center space-x-2">
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                <span>Admin Dashboard</span>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/help" className="flex items-center space-x-2">

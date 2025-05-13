@@ -68,13 +68,27 @@ const Cart: React.FC = () => {
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('Order creation error:', orderError);
+        throw orderError;
+      }
+
+      if (!orderData || !orderData.id) {
+        throw new Error('Failed to create order - no order ID returned');
+      }
+
+      console.log('Order created successfully:', orderData);
 
       // 2. Create order items
       const orderItems = cartItems.map(item => {
-        const itemPrice = item.product?.discount
+        if (!item.product) {
+          console.error('Missing product data for cart item:', item);
+          return null;
+        }
+
+        const itemPrice = item.product.discount
           ? item.product.price * (1 - item.product.discount / 100)
-          : item.product?.price || 0;
+          : item.product.price || 0;
 
         return {
           order_id: orderData.id,
@@ -84,46 +98,58 @@ const Cart: React.FC = () => {
           color: item.color,
           price: itemPrice
         };
-      });
+      }).filter(Boolean);
+
+      if (orderItems.length === 0) {
+        throw new Error('No valid order items to create');
+      }
 
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error('Order items error:', itemsError);
+        throw itemsError;
+      }
 
-      // 3. Send invoice emails
-      const { data: invoiceData, error: invoiceError } = await supabase.functions
-        .invoke('send-invoice', {
-          body: { 
-            orderId: orderData.id,
-            userId: user.id
-          }
-        });
+      console.log('Order items created successfully');
 
-      if (invoiceError) throw invoiceError;
+      // 3. Send invoice emails (wrapped in try/catch to continue even if this fails)
+      try {
+        const { data: invoiceData, error: invoiceError } = await supabase.functions
+          .invoke('send-invoice', {
+            body: { 
+              orderId: orderData.id,
+              userId: user.id
+            }
+          });
+
+        if (invoiceError) {
+          console.error('Invoice error:', invoiceError);
+        } else {
+          console.log('Invoice sent successfully:', invoiceData);
+        }
+      } catch (invoiceErr) {
+        console.error('Failed to send invoice, but order was created:', invoiceErr);
+      }
 
       // 4. Clear cart after successful order
       await clearCart();
+      console.log('Cart cleared successfully');
 
       // 5. Show success message and redirect
       toast.success('Order placed successfully!');
       
-      // WhatsApp sharing option
-      if (invoiceData?.whatsappMessage) {
-        const whatsappUrl = `https://wa.me/qr/YLDXJYXDR4LHA1?text=${invoiceData.whatsappMessage}`;
-        window.open(whatsappUrl, '_blank');
-      }
-
       // Redirect back to home page
       setTimeout(() => {
         navigate('/');
         toast.info('Order confirmation has been sent to your email');
       }, 2000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error placing order:', error);
-      toast.error('Failed to place order. Please try again.');
+      toast.error(`Failed to place order: ${error.message || 'Please try again'}`);
     } finally {
       setIsSubmitting(false);
     }

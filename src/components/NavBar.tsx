@@ -1,18 +1,20 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Search } from 'lucide-react';
+import { Menu, X, ShoppingCart, Search, LayoutDashboard } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ProfileMenu from './ProfileMenu';
 import SearchBar from './SearchBar';
 import { useCart } from '@/contexts/CartContext';
 import UserMessages from './UserMessages';
+import { useAuth } from '@/contexts/AuthContext';
 
 const NavBar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const isMobile = useIsMobile();
   const { itemCount } = useCart();
+  const { isAdmin } = useAuth();
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -27,8 +29,12 @@ const NavBar: React.FC = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           {/* Logo / Brand */}
-          <Link to="/" className="text-2xl font-bold text-gray-800">
-            JE's Palace
+          <Link to="/" className="flex items-center">
+            <img 
+              src="/lovable-uploads/4e6ff6a6-d0a0-4f5b-8aea-bf3eddcb5752.png" 
+              alt="JE's Palace Logo" 
+              className="h-10 mr-2"
+            />
           </Link>
           
           {/* Desktop Navigation */}
@@ -48,6 +54,12 @@ const NavBar: React.FC = () => {
             <Link to="/contact" className="text-gray-600 hover:text-brand-orange transition-colors">
               Contact
             </Link>
+            {isAdmin && (
+              <Link to="/admin" className="text-brand-orange font-medium hover:text-brand-orange/80 transition-colors flex items-center">
+                <LayoutDashboard className="h-4 w-4 mr-1" />
+                Admin
+              </Link>
+            )}
           </div>
           
           {/* Right Icons */}
@@ -98,6 +110,12 @@ const NavBar: React.FC = () => {
             <Link to="/contact" className="block text-gray-600 hover:text-brand-orange transition-colors">
               Contact
             </Link>
+            {isAdmin && (
+              <Link to="/admin" className="block text-brand-orange font-medium hover:text-brand-orange/80 transition-colors flex items-center">
+                <LayoutDashboard className="h-4 w-4 mr-1" />
+                Admin Dashboard
+              </Link>
+            )}
           </div>
         )}
         
