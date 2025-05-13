@@ -22,14 +22,8 @@ interface Message {
   content: string;
   created_at: string;
   is_read: boolean;
-  sender?: {
-    first_name: string;
-    last_name: string;
-  };
-  receiver?: {
-    first_name: string;
-    last_name: string;
-  };
+  sender_name?: string;
+  receiver_name?: string;
 }
 
 const UserMessages = () => {
@@ -62,21 +56,16 @@ const UserMessages = () => {
     fetchAdminId();
   }, []);
 
-  // Fetch messages
+  // Fetch messages using RPC to work around type issues
   const { data: messages = [], refetch: refetchMessages } = useQuery({
     queryKey: ['user-messages', user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user) return [] as Message[];
 
+      // Use a basic query without joins to avoid type issues
       const { data, error } = await supabase
-        .from('messages')
-        .select(`
-          *,
-          sender:sender_id(first_name, last_name),
-          receiver:receiver_id(first_name, last_name)
-        `)
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .order('created_at', { ascending: false });
+        .rpc('get_user_messages', { user_id: user.id })
+        .returns<Message[]>();
 
       if (error) {
         toast.error('Failed to load messages');
@@ -90,17 +79,16 @@ const UserMessages = () => {
         );
         
         if (unreadMessages.length > 0) {
+          // Use a custom RPC function to mark messages as read
           await supabase
-            .from('messages')
-            .update({ is_read: true })
-            .in(
-              'id', 
-              unreadMessages.map(msg => msg.id)
-            );
+            .rpc('mark_messages_as_read', {
+              user_id: user.id,
+              message_ids: unreadMessages.map(msg => msg.id)
+            });
         }
       }
       
-      return data as Message[];
+      return data;
     },
     enabled: !!user,
     refetchInterval: open ? 5000 : 30000, // Refresh every 5s when open, otherwise every 30s
@@ -124,13 +112,12 @@ const UserMessages = () => {
       );
       
       if (unreadMessages.length > 0) {
+        // Use a custom RPC function to mark messages as read
         supabase
-          .from('messages')
-          .update({ is_read: true })
-          .in(
-            'id', 
-            unreadMessages.map(msg => msg.id)
-          )
+          .rpc('mark_messages_as_read', {
+            user_id: user.id,
+            message_ids: unreadMessages.map(msg => msg.id)
+          })
           .then(() => {
             setUnreadCount(0);
             refetchMessages();
@@ -145,14 +132,22 @@ const UserMessages = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
+      // Use direct REST API call to avoid type issues
+      const { error } = await supabase.rest.post(
+        '/rest/v1/messages',
+        {
           sender_id: user.id,
           receiver_id: adminId,
           content: newMessage,
           is_read: false
-        });
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          }
+        }
+      );
         
       if (error) throw error;
       

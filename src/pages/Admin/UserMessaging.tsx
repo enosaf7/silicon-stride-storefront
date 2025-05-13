@@ -83,19 +83,17 @@ const UserMessaging: React.FC = () => {
       if (!selectedUser) return [];
 
       // Get messages between admin and selected user
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(`sender_id.eq.${user?.id},receiver_id.eq.${user?.id}`)
-        .or(`sender_id.eq.${selectedUser.id},receiver_id.eq.${selectedUser.id}`)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('get_conversation_messages', {
+        user1: user?.id,
+        user2: selectedUser.id
+      }).returns<Message[]>();
 
       if (error) {
         toast.error('Failed to load messages');
         throw error;
       }
       
-      return data as Message[];
+      return data;
     },
     enabled: !!selectedUser && !!user,
   });
@@ -115,15 +113,22 @@ const UserMessaging: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Insert message in database
-      const { error } = await supabase
-        .from('messages')
-        .insert({
+      // Use REST API to avoid type issues
+      const { error } = await supabase.rest.post(
+        '/rest/v1/messages',
+        {
           sender_id: user?.id,
           receiver_id: selectedUser.id,
           content: messageContent,
           is_read: false
-        });
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          }
+        }
+      );
         
       if (error) throw error;
       

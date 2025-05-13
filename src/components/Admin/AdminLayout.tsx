@@ -7,6 +7,7 @@ import {
   ShoppingBag,
   Users,
   Star,
+  MessageSquare,
   LogOut,
   Menu,
   X
@@ -52,6 +53,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       name: 'Reviews',
       path: '/admin/reviews',
       icon: <Star className="h-5 w-5" />
+    },
+    {
+      name: 'Messages',
+      path: '/admin/messages',
+      icon: <MessageSquare className="h-5 w-5" />
     }
   ];
   
