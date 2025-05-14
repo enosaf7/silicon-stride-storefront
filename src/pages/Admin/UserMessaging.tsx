@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -415,14 +414,19 @@ const UserMessaging: React.FC = () => {
                       >
                         <div className="font-medium flex justify-between items-center">
                           <span>{item.first_name} {item.last_name}</span>
-                          {activeTab === 'conversations' && 'unread_count' in item && item.unread_count > 0 && (
+                          {activeTab === 'conversations' && 
+                           'unread_count' in item && 
+                           typeof item.unread_count === 'number' && 
+                           item.unread_count > 0 && (
                             <span className="bg-brand-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                               {item.unread_count}
                             </span>
                           )}
                         </div>
                         <div className="text-sm text-gray-500">{item.email}</div>
-                        {activeTab === 'conversations' && 'last_message_at' in item && (
+                        {activeTab === 'conversations' && 
+                         'last_message_at' in item && 
+                         typeof item.last_message_at === 'string' && (
                           <div className="text-xs text-gray-400 mt-1">
                             {formatDate(item.last_message_at)}
                           </div>
