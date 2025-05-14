@@ -28,6 +28,11 @@ interface User {
   created_at: string;
 }
 
+interface ConversationUser extends User {
+  unread_count: number;
+  last_message_at: string;
+}
+
 interface Message {
   id: string;
   sender_id: string;
@@ -87,8 +92,9 @@ const UserMessaging: React.FC = () => {
   const { data: conversationsData = [], isLoading: isLoadingConversations } = useQuery({
     queryKey: ['admin-conversations'],
     queryFn: async () => {
-      if (!user) return [] as User[];
+      if (!user) return [] as ConversationUser[];
 
+      // Call the RPC function
       const { data, error } = await supabase.rpc('get_admin_conversations', {
         admin_id: user.id
       });
@@ -97,6 +103,8 @@ const UserMessaging: React.FC = () => {
         toast.error('Failed to load conversations');
         throw error;
       }
+      
+      if (!data) return [] as ConversationUser[];
       
       // Map conversation users to the same format as users
       return data.map((conversation: any) => ({
@@ -107,7 +115,7 @@ const UserMessaging: React.FC = () => {
         created_at: new Date().toISOString(),
         unread_count: conversation.unread_count || 0,
         last_message_at: conversation.last_message_at
-      }));
+      })) as ConversationUser[];
     },
     enabled: !!user && isAdmin,
   });

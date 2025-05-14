@@ -326,6 +326,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_admin_conversations: {
+        Args: { admin_id: string }
+        Returns: {
+          user_id: string
+          first_name: string
+          last_name: string
+          unread_count: number
+          last_message_at: string
+        }[]
+      }
       get_conversation_messages: {
         Args: { user1: string; user2: string }
         Returns: {

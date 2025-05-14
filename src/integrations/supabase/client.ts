@@ -10,3 +10,14 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+// Extending supabase.rpc with our custom functions to make typescript happy
+const originalRpc = supabase.rpc.bind(supabase);
+supabase.rpc = (fn: string, ...args: any[]) => {
+  // Add type safety for custom RPC functions
+  if (fn === 'get_admin_conversations') {
+    return originalRpc(fn, ...args);
+  }
+  return originalRpc(fn, ...args);
+};
+
