@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MailIcon, Send, Loader } from 'lucide-react';
+import { MailIcon, Send, Loader, Reply } from 'lucide-react';
+import { MessageAttachment, AttachmentPreview } from '@/components/MessageAttachment';
 
 interface Message {
   id: string;
@@ -24,6 +25,10 @@ interface Message {
   is_read: boolean;
   sender_name?: string;
   receiver_name?: string;
+  attachment_url?: string;
+  attachment_type?: string;
+  reply_to?: string;
+  reply_content?: string;
 }
 
 const UserMessages = () => {
@@ -33,6 +38,8 @@ const UserMessages = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [adminId, setAdminId] = useState<string | null>(null);
+  const [attachment, setAttachment] = useState<{ url: string; type: string } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
   // Get admin user ID for messaging
   useEffect(() => {
@@ -112,7 +119,7 @@ const UserMessages = () => {
   }, [open, user, messages, refetchMessages]);
 
   const sendMessage = async () => {
-    if (!user || !adminId || !newMessage.trim()) return;
+    if (!user || !adminId || (!newMessage.trim() && !attachment)) return;
     
     setIsSubmitting(true);
     
@@ -123,12 +130,17 @@ const UserMessages = () => {
           sender_id: user.id,
           receiver_id: adminId,
           content: newMessage,
-          is_read: false
+          is_read: false,
+          attachment_url: attachment?.url,
+          attachment_type: attachment?.type,
+          reply_to: replyingTo?.id
         });
         
       if (error) throw error;
       
       setNewMessage('');
+      setAttachment(null);
+      setReplyingTo(null);
       refetchMessages();
     } catch (error) {
       console.error('Error sending message:', error);
@@ -136,6 +148,18 @@ const UserMessages = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAttachment = (url: string, type: string) => {
+    setAttachment({ url, type });
+  };
+
+  const handleReply = (message: Message) => {
+    setReplyingTo(message);
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
   };
 
   if (!user) return null;
@@ -176,20 +200,65 @@ const UserMessages = () => {
                   className={`flex ${message.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
                 >
                   <div 
-                    className={`p-3 rounded-lg max-w-[80%] ${
+                    className={`relative p-3 rounded-lg max-w-[85%] ${
                       message.sender_id === user.id 
                         ? 'bg-brand-orange text-white' 
                         : 'bg-gray-100'
                     }`}
                   >
+                    {/* Reply preview if this message is a reply */}
+                    {message.reply_to && (
+                      <div className={`text-xs mb-2 p-2 rounded ${
+                        message.sender_id === user.id 
+                          ? 'bg-white/10 text-white/90' 
+                          : 'bg-gray-200 text-gray-700'
+                      }`}>
+                        <p className="font-semibold">
+                          {message.sender_id === user.id ? "You replied to:" : "Reply to:"}
+                        </p>
+                        <p className="truncate">
+                          {message.reply_content || "..."}
+                        </p>
+                      </div>
+                    )}
+
                     <p>{message.content}</p>
-                    <p className={`text-xs mt-1 ${
-                      message.sender_id === user.id 
-                        ? 'text-white/70' 
-                        : 'text-gray-500'
-                    }`}>
-                      {formatDate(message.created_at)}
-                    </p>
+                    
+                    {/* Attachment Preview */}
+                    {message.attachment_url && (
+                      <div className="mt-2">
+                        <AttachmentPreview 
+                          url={message.attachment_url} 
+                          type={message.attachment_type || 'file'} 
+                          className="max-w-full"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center mt-1">
+                      <p className={`text-xs ${
+                        message.sender_id === user.id 
+                          ? 'text-white/70' 
+                          : 'text-gray-500'
+                      }`}>
+                        {formatDate(message.created_at)}
+                      </p>
+                      
+                      {message.sender_id !== user.id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={`h-5 w-5 ml-2 ${
+                            message.sender_id === user.id 
+                              ? 'text-white/80 hover:text-white' 
+                              : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                          onClick={() => handleReply(message)}
+                        >
+                          <Reply className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -202,6 +271,33 @@ const UserMessages = () => {
         </div>
         
         <div className="mt-auto border-t pt-4">
+          {/* Reply preview */}
+          {replyingTo && (
+            <div className="mb-2 p-2 bg-gray-100 rounded-md text-sm relative">
+              <p className="font-medium">Replying to:</p>
+              <p className="truncate text-gray-600">{replyingTo.content}</p>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-1 right-1 h-6 w-6"
+                onClick={cancelReply}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+          
+          {/* Attachment preview */}
+          {attachment && (
+            <div className="mb-2">
+              <AttachmentPreview 
+                url={attachment.url} 
+                type={attachment.type} 
+                onRemove={() => setAttachment(null)} 
+              />
+            </div>
+          )}
+          
           <div className="flex">
             <Textarea
               placeholder="Type your message..."
@@ -215,17 +311,20 @@ const UserMessages = () => {
                 }
               }}
             />
-            <Button 
-              className="rounded-l-none bg-brand-orange hover:bg-brand-orange/90"
-              onClick={sendMessage}
-              disabled={isSubmitting || !newMessage.trim() || !adminId}
-            >
-              {isSubmitting ? (
-                <Loader className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
+            <div className="flex flex-col">
+              <MessageAttachment onAttach={handleAttachment} />
+              <Button 
+                className="flex-grow rounded-l-none bg-brand-orange hover:bg-brand-orange/90"
+                onClick={sendMessage}
+                disabled={isSubmitting || (!newMessage.trim() && !attachment) || !adminId}
+              >
+                {isSubmitting ? (
+                  <Loader className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </SheetContent>

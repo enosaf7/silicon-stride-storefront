@@ -90,14 +90,14 @@ const ProductTable: React.FC<ProductTableProps> = ({ products, onEdit, onRefresh
                     {product.discount ? (
                       <div>
                         <span className="text-gray-500 line-through mr-2">
-                          ${product.price.toFixed(2)}
+                          ₵{product.price.toFixed(2)}
                         </span>
                         <span className="font-medium">
-                          ${(product.price * (1 - product.discount / 100)).toFixed(2)}
+                          ₵{(product.price * (1 - product.discount / 100)).toFixed(2)}
                         </span>
                       </div>
                     ) : (
-                      <span>${product.price.toFixed(2)}</span>
+                      <span>₵{product.price.toFixed(2)}</span>
                     )}
                   </TableCell>
                   <TableCell className="text-center">

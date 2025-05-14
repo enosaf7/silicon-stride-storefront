@@ -6,11 +6,12 @@ import AdminLayout from '@/components/Admin/AdminLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader, Send, Search } from 'lucide-react';
+import { Loader, Send, Search, Reply, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MessageAttachment, AttachmentPreview } from '@/components/MessageAttachment';
 
 interface User {
   id: string;
@@ -29,6 +30,10 @@ interface Message {
   is_read: boolean;
   sender_name?: string;
   receiver_name?: string;
+  attachment_url?: string;
+  attachment_type?: string;
+  reply_to?: string;
+  reply_content?: string;
 }
 
 const UserMessaging: React.FC = () => {
@@ -38,6 +43,8 @@ const UserMessaging: React.FC = () => {
   const [messageContent, setMessageContent] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [attachment, setAttachment] = useState<{ url: string; type: string } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
   // Fetch users
   const { data: usersData = [], isLoading: isLoadingUsers } = useQuery({
@@ -89,6 +96,7 @@ const UserMessaging: React.FC = () => {
       return data as Message[];
     },
     enabled: !!selectedUser && !!user,
+    refetchInterval: 5000, // Refresh every 5s to get new messages
   });
 
   // Safely handle messages data
@@ -104,7 +112,7 @@ const UserMessaging: React.FC = () => {
   });
 
   const sendMessage = async () => {
-    if (!selectedUser || !messageContent.trim() || !user) return;
+    if (!selectedUser || (!messageContent.trim() && !attachment) || !user) return;
     
     setIsSubmitting(true);
     
@@ -115,13 +123,18 @@ const UserMessaging: React.FC = () => {
           sender_id: user.id,
           receiver_id: selectedUser.id,
           content: messageContent,
-          is_read: false
+          is_read: false,
+          attachment_url: attachment?.url,
+          attachment_type: attachment?.type,
+          reply_to: replyingTo?.id
         });
         
       if (error) throw error;
       
       // Clear input and refetch messages
       setMessageContent('');
+      setAttachment(null);
+      setReplyingTo(null);
       refetchMessages();
       toast.success('Message sent successfully');
     } catch (error) {
@@ -130,6 +143,18 @@ const UserMessaging: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAttachment = (url: string, type: string) => {
+    setAttachment({ url, type });
+  };
+
+  const handleReply = (message: Message) => {
+    setReplyingTo(message);
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
   };
 
   if (loading) {
@@ -224,20 +249,65 @@ const UserMessaging: React.FC = () => {
                           className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                         >
                           <div 
-                            className={`p-3 rounded-lg max-w-[80%] ${
+                            className={`relative p-3 rounded-lg max-w-[80%] ${
                               message.sender_id === user?.id 
                                 ? 'bg-brand-orange text-white' 
                                 : 'bg-gray-100'
                             }`}
                           >
+                            {/* Reply preview */}
+                            {message.reply_to && (
+                              <div className={`text-xs mb-2 p-2 rounded ${
+                                message.sender_id === user?.id 
+                                  ? 'bg-white/10 text-white/90' 
+                                  : 'bg-gray-200 text-gray-700'
+                              }`}>
+                                <p className="font-semibold">
+                                  {message.sender_id === user?.id ? "You replied to:" : "Reply to:"}
+                                </p>
+                                <p className="truncate">
+                                  {message.reply_content || "..."}
+                                </p>
+                              </div>
+                            )}
+                            
                             <p>{message.content}</p>
-                            <p className={`text-xs mt-1 ${
-                              message.sender_id === user?.id 
-                                ? 'text-white/70' 
-                                : 'text-gray-500'
-                            }`}>
-                              {formatDate(message.created_at)}
-                            </p>
+                            
+                            {/* Attachment Preview */}
+                            {message.attachment_url && (
+                              <div className="mt-2">
+                                <AttachmentPreview 
+                                  url={message.attachment_url} 
+                                  type={message.attachment_type || 'file'} 
+                                  className="max-w-full"
+                                />
+                              </div>
+                            )}
+                            
+                            <div className="flex justify-between items-center mt-1">
+                              <p className={`text-xs ${
+                                message.sender_id === user?.id 
+                                  ? 'text-white/70' 
+                                  : 'text-gray-500'
+                              }`}>
+                                {formatDate(message.created_at)}
+                              </p>
+                              
+                              {message.sender_id !== user?.id && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className={`h-5 w-5 ml-2 ${
+                                    message.sender_id === user?.id 
+                                      ? 'text-white/80 hover:text-white' 
+                                      : 'text-gray-500 hover:text-gray-700'
+                                  }`}
+                                  onClick={() => handleReply(message)}
+                                >
+                                  <Reply className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -251,6 +321,33 @@ const UserMessaging: React.FC = () => {
                 
                 {/* Message Input */}
                 <div className="p-4 border-t border-gray-200">
+                  {/* Reply preview */}
+                  {replyingTo && (
+                    <div className="mb-2 p-2 bg-gray-100 rounded-md text-sm relative">
+                      <p className="font-medium">Replying to:</p>
+                      <p className="truncate text-gray-600">{replyingTo.content}</p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-1 right-1 h-6 w-6"
+                        onClick={cancelReply}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Attachment preview */}
+                  {attachment && (
+                    <div className="mb-2">
+                      <AttachmentPreview 
+                        url={attachment.url} 
+                        type={attachment.type} 
+                        onRemove={() => setAttachment(null)} 
+                      />
+                    </div>
+                  )}
+                  
                   <div className="flex">
                     <Textarea
                       placeholder="Type your message..."
@@ -264,17 +361,20 @@ const UserMessaging: React.FC = () => {
                         }
                       }}
                     />
-                    <Button 
-                      className="rounded-l-none bg-brand-orange hover:bg-brand-orange/90"
-                      onClick={sendMessage}
-                      disabled={isSubmitting || !messageContent.trim()}
-                    >
-                      {isSubmitting ? (
-                        <Loader className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                    </Button>
+                    <div className="flex flex-col">
+                      <MessageAttachment onAttach={handleAttachment} />
+                      <Button 
+                        className="flex-grow rounded-l-none bg-brand-orange hover:bg-brand-orange/90"
+                        onClick={sendMessage}
+                        disabled={isSubmitting || (!messageContent.trim() && !attachment)}
+                      >
+                        {isSubmitting ? (
+                          <Loader className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </>

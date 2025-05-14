@@ -89,6 +89,16 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
   
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     try {
+      // Create storage bucket if it doesn't exist
+      const { error: bucketError } = await supabase.storage.getBucket('product-images');
+      if (bucketError && bucketError.message.includes('not found')) {
+        await supabase.storage.createBucket('product-images', {
+          public: true,
+          fileSizeLimit: 10485760, // 10MB
+        });
+        console.log('Created product-images bucket');
+      }
+      
       // Process image uploads if there are File objects
       const imageURLs = await Promise.all(
         values.images.map(async (image: File | string) => {
@@ -105,6 +115,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
               .upload(`products/${fileName}`, image);
               
             if (error) {
+              console.error('Upload error:', error);
               throw error;
             }
             
@@ -285,7 +296,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price ($)</FormLabel>
+                    <FormLabel>Price (₵)</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" min="0" {...field} />
                     </FormControl>
