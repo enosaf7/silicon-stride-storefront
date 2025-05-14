@@ -17,6 +17,24 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper function to clean up auth tokens
+const cleanupAuthState = () => {
+  // Remove standard auth tokens
+  localStorage.removeItem('supabase.auth.token');
+  // Remove all Supabase auth keys from localStorage
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+  // Remove from sessionStorage if in use
+  Object.keys(sessionStorage || {}).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      sessionStorage.removeItem(key);
+    }
+  });
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -73,6 +91,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Clean up existing auth state before signing in
+      cleanupAuthState();
+      
+      // Attempt to sign out globally before signing in
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if sign out fails
+        console.log('Pre-signin signout failed (expected):', err);
+      }
+      
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success('Successfully logged in!');
@@ -107,11 +136,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      // Clean up all auth state first
+      cleanupAuthState();
+      
+      // Attempt a global sign out with Supabase
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        console.error('Error during signout:', err);
+      }
+      
+      // Reset local state
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+      
       toast.success('Successfully logged out');
-      navigate('/login');
+      
+      // Force a page reload to ensure clean state
+      window.location.href = '/login';
     } catch (error: any) {
       toast.error(error.message || 'Error signing out');
+      console.error('Logout error:', error);
     }
   };
 

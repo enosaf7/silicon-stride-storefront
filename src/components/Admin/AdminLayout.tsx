@@ -81,6 +81,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     
     return () => window.removeEventListener('resize', checkWidth);
   }, []);
+
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await signOut();
+    // Redirect will be handled in the AuthContext
+  };
   
   return (
     <>
@@ -134,7 +140,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <Button
               variant="ghost"
               className={`flex w-full items-center justify-${isSidebarOpen ? 'start' : 'center'} py-3 px-4 text-gray-700 hover:bg-gray-100 transition-colors`}
-              onClick={signOut}
+              onClick={handleSignOut}
             >
               <LogOut className="h-5 w-5" />
               {isSidebarOpen && <span className="ml-3">Logout</span>}
@@ -173,7 +179,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <Button
                   variant="ghost"
                   className="flex w-full items-center justify-start py-3 px-4 text-gray-700 hover:bg-gray-100 transition-colors"
-                  onClick={signOut}
+                  onClick={handleSignOut}
                 >
                   <LogOut className="h-5 w-5" />
                   <span className="ml-3">Logout</span>

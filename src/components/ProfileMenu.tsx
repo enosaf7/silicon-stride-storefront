@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   DropdownMenu,
@@ -17,7 +17,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 const ProfileMenu: React.FC = () => {
   const { user, signOut, isAdmin } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [firstName, setFirstName] = useState<string | null>(null);
   const [lastName, setLastName] = useState<string | null>(null);
@@ -51,13 +50,19 @@ const ProfileMenu: React.FC = () => {
     fetchProfile();
   }, [user, toast]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    })
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await signOut();
+      // The redirect is now handled in the AuthContext signOut function
+    } catch (error) {
+      console.error("Sign out error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+      });
+    }
   };
 
   const avatarUrl = user?.email ? `https://api.dicebear.com/7.x/lorelei/svg?seed=${user.email}` : '';
