@@ -52,30 +52,50 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachment_type: string | null
+          attachment_url: string | null
           content: string
           created_at: string
           id: string
           is_read: boolean
           receiver_id: string
+          reply_content: string | null
+          reply_to: string | null
           sender_id: string
         }
         Insert: {
+          attachment_type?: string | null
+          attachment_url?: string | null
           content: string
           created_at?: string
           id?: string
           is_read?: boolean
           receiver_id: string
+          reply_content?: string | null
+          reply_to?: string | null
           sender_id: string
         }
         Update: {
+          attachment_type?: string | null
+          attachment_url?: string | null
           content?: string
           created_at?: string
           id?: string
           is_read?: boolean
           receiver_id?: string
+          reply_content?: string | null
+          reply_to?: string | null
           sender_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {

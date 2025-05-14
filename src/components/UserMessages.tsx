@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MailIcon, Send, Loader, Reply } from 'lucide-react';
+import { MailIcon, Send, Loader, Reply, X } from 'lucide-react';
 import { MessageAttachment, AttachmentPreview } from '@/components/MessageAttachment';
 
 interface Message {
