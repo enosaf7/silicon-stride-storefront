@@ -24,5 +24,19 @@
     <div id="root"></div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
+    <style>
+      /* Hide the Lovable badge */
+      .lovable-badge, 
+      #lovable-badge,
+      [id*="lovable-badge"],
+      [class*="lovable-badge"],
+      [id*="lv-badge"],
+      [class*="lv-badge"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+    </style>
   </body>
 </html>
