@@ -100,7 +100,7 @@ const Index: React.FC = () => {
                 <p className="text-gray-600 mb-4">
                   "These are the most comfortable shoes I've ever worn. The silicon cushioning makes a huge difference during my long work days. Highly recommend!"
                 </p>
-                <div className="font-medium">Sarah J.</div>
+                <div className="font-medium">Osafo Enoch.</div>
               </div>
               
               {/* Testimonial 2 */}
@@ -117,7 +117,7 @@ const Index: React.FC = () => {
                 <p className="text-gray-600 mb-4">
                   "I've tried many brands of running shoes, but Jhoey-Silicon has been a game-changer. The support and cushioning are exceptional, and they look great too!"
                 </p>
-                <div className="font-medium">Michael T.</div>
+                <div className="font-medium">Michael Ohene.</div>
               </div>
               
               {/* Testimonial 3 */}
@@ -137,7 +137,7 @@ const Index: React.FC = () => {
                 <p className="text-gray-600 mb-4">
                   "Love my new Beach Comfort Sandals! Perfect for summer and incredibly comfortable. The only reason for 4 stars instead of 5 is that they run slightly large."
                 </p>
-                <div className="font-medium">Lisa R.</div>
+                <div className="font-medium">Kenneth Ntiri.</div>
               </div>
             </div>
           </div>
