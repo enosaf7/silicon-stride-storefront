@@ -6,11 +6,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/utils/types';
 
 interface SearchBarProps {
-  isOpen: boolean;
-  toggleSearch: () => void;
+  isOpen?: boolean;
+  toggleSearch?: () => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ isOpen, toggleSearch }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ 
+  isOpen = true, 
+  toggleSearch = () => {} 
+}) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);

@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/Admin/AdminLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Loader, Send, Search, Reply, X, Users, MessageSquare, MailPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,11 +70,7 @@ const UserMessaging: React.FC = () => {
         .select('id, first_name, last_name');
 
       if (profileError) {
-        toast({
-          title: "Error",
-          description: "Failed to load user profiles",
-          variant: "destructive"
-        });
+        toast.error("Failed to load user profiles");
         throw profileError;
       }
 
@@ -104,11 +99,7 @@ const UserMessaging: React.FC = () => {
       });
 
       if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load conversations",
-          variant: "destructive"
-        });
+        toast.error("Failed to load conversations");
         throw error;
       }
       
@@ -145,11 +136,7 @@ const UserMessaging: React.FC = () => {
         });
 
       if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load messages",
-          variant: "destructive"
-        });
+        toast.error("Failed to load messages");
         throw error;
       }
       
@@ -217,17 +204,10 @@ const UserMessaging: React.FC = () => {
       setAttachment(null);
       setReplyingTo(null);
       refetchMessages();
-      toast({
-        title: "Success",
-        description: "Message sent successfully"
-      });
+      toast.success("Message sent successfully");
     } catch (error) {
       console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive"
-      });
+      toast.error("Failed to send message");
     } finally {
       setIsSubmitting(false);
     }
@@ -261,17 +241,10 @@ const UserMessaging: React.FC = () => {
       setAttachment(null);
       setNewMessageDialogOpen(false);
       refetchMessages();
-      toast({
-        title: "Success",
-        description: "Message sent successfully"
-      });
+      toast.success("Message sent successfully");
     } catch (error) {
       console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive"
-      });
+      toast.error("Failed to send message");
     } finally {
       setIsSubmitting(false);
     }
