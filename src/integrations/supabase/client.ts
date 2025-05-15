@@ -15,9 +15,11 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 const originalRpc = supabase.rpc.bind(supabase);
 supabase.rpc = (fn: string, ...args: any[]) => {
   // Add type safety for custom RPC functions
-  if (fn === 'get_admin_conversations') {
+  if (fn === 'get_admin_conversations' || 
+      fn === 'get_user_messages' || 
+      fn === 'get_conversation_messages' || 
+      fn === 'mark_messages_as_read') {
     return originalRpc(fn, ...args);
   }
   return originalRpc(fn, ...args);
 };
-

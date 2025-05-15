@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import {
   Sheet,
   SheetContent,
@@ -72,7 +73,11 @@ const UserMessages = () => {
         .rpc('get_user_messages', { user_id: user.id });
 
       if (error) {
-        toast.error('Failed to load messages');
+        toast({
+          title: "Error",
+          description: "Failed to load messages",
+          variant: "destructive"
+        });
         throw error;
       }
       
@@ -143,7 +148,11 @@ const UserMessages = () => {
       refetchMessages();
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Failed to send message');
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
