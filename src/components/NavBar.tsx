@@ -1,128 +1,99 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Search, LayoutDashboard } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import ProfileMenu from './ProfileMenu';
-import SearchBar from './SearchBar';
-import { useCart } from '@/contexts/CartContext';
-import UserMessages from './UserMessages';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import SearchBar from '@/components/SearchBar';
+import ProfileMenu from '@/components/ProfileMenu';
+import UserMessages from '@/components/UserMessages';
+import { ShoppingCart } from 'lucide-react';
 
 const NavBar: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const isMobile = useIsMobile();
-  const { itemCount } = useCart();
-  const { isAdmin } = useAuth();
+  const { user } = useAuth();
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith('/admin');
   
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-  };
-
-  return (
-    <nav className="bg-white border-b border-gray-200">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex justify-between items-center">
-          {/* Logo / Brand */}
-          <Link to="/" className="flex items-center">
-            <img 
-              src="/lovable-uploads/4e6ff6a6-d0a0-4f5b-8aea-bf3eddcb5752.png" 
-              alt="JE's Palace Logo" 
-              className="h-10 mr-2"
-            />
+  // Don't show the navbar on the login or signup pages
+  if (location.pathname === '/login' || location.pathname === '/signup') {
+    return null;
+  }
+  
+  // Simplified admin header for admin pages
+  if (isAdminPage) {
+    return (
+      <header className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="font-bold text-xl text-brand-orange">JE's Palace</span>
           </Link>
           
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-6">
-            <Link to="/" className="text-gray-600 hover:text-brand-orange transition-colors">
-              Home
-            </Link>
-            <Link to="/products" className="text-gray-600 hover:text-brand-orange transition-colors">
-              Shop
-            </Link>
-            <Link to="/categories" className="text-gray-600 hover:text-brand-orange transition-colors">
-              Categories
-            </Link>
-            <Link to="/about" className="text-gray-600 hover:text-brand-orange transition-colors">
-              About
-            </Link>
-            <Link to="/contact" className="text-gray-600 hover:text-brand-orange transition-colors">
-              Contact
-            </Link>
-            {isAdmin && (
-              <Link to="/admin" className="text-brand-orange font-medium hover:text-brand-orange/80 transition-colors flex items-center">
-                <LayoutDashboard className="h-4 w-4 mr-1" />
-                Admin
-              </Link>
-            )}
+          <div className="flex items-center gap-2">
+            {user && <ProfileMenu />}
+          </div>
+        </div>
+      </header>
+    );
+  }
+  
+  return (
+    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2">
+            <span className="font-bold text-xl text-brand-orange">JE's Palace</span>
+          </Link>
+          
+          {/* Search Bar - hidden on mobile */}
+          <div className="hidden md:block flex-grow mx-4 max-w-md">
+            <SearchBar />
           </div>
           
-          {/* Right Icons */}
-          <div className="flex items-center space-x-4">
-            {/* Search Icon */}
-            <button onClick={toggleSearch} aria-label="Search" className="text-gray-700 hover:text-brand-orange transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
+          {/* Navigation Links */}
+          <div className="flex items-center gap-4">
+            <nav className="hidden md:flex items-center gap-4">
+              <Link to="/products" className="text-gray-600 hover:text-brand-orange transition-colors">
+                Products
+              </Link>
+              <Link to="/categories" className="text-gray-600 hover:text-brand-orange transition-colors">
+                Categories
+              </Link>
+              <Link to="/about" className="text-gray-600 hover:text-brand-orange transition-colors">
+                About
+              </Link>
+              <Link to="/contact" className="text-gray-600 hover:text-brand-orange transition-colors">
+                Contact
+              </Link>
+            </nav>
             
-            {/* Shopping Cart */}
-            <Link to="/cart" className="text-gray-700 hover:text-brand-orange transition-colors relative">
-              <ShoppingCart className="h-5 w-5" />
-              {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-brand-orange text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                  {itemCount > 9 ? '9+' : itemCount}
-                </span>
+            {/* User Controls */}
+            <div className="flex items-center gap-2">
+              {user ? (
+                <>
+                  <Link to="/cart">
+                    <Button variant="ghost" size="icon" aria-label="Cart">
+                      <ShoppingCart className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                  {/* Add the UserMessages component here */}
+                  <UserMessages />
+                  <ProfileMenu />
+                </>
+              ) : (
+                <Link to="/login">
+                  <Button>Login</Button>
+                </Link>
               )}
-            </Link>
-            
-            {/* User Messages */}
-            <UserMessages />
-            
-            {/* Profile Menu */}
-            <ProfileMenu />
-            
-            {/* Mobile Menu Button */}
-            <button onClick={toggleMenu} className="md:hidden text-gray-700">
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            </div>
           </div>
         </div>
         
-        {/* Mobile Navigation */}
-        {isMenuOpen && isMobile && (
-          <div className="md:hidden py-4 space-y-3">
-            <Link to="/" className="block text-gray-600 hover:text-brand-orange transition-colors">
-              Home
-            </Link>
-            <Link to="/products" className="block text-gray-600 hover:text-brand-orange transition-colors">
-              Shop
-            </Link>
-            <Link to="/categories" className="block text-gray-600 hover:text-brand-orange transition-colors">
-              Categories
-            </Link>
-            <Link to="/about" className="block text-gray-600 hover:text-brand-orange transition-colors">
-              About
-            </Link>
-            <Link to="/contact" className="block text-gray-600 hover:text-brand-orange transition-colors">
-              Contact
-            </Link>
-            {isAdmin && (
-              <Link to="/admin" className="block text-brand-orange font-medium hover:text-brand-orange/80 transition-colors flex items-center">
-                <LayoutDashboard className="h-4 w-4 mr-1" />
-                Admin Dashboard
-              </Link>
-            )}
-          </div>
-        )}
-        
-        {/* Search Bar */}
-        <SearchBar isOpen={isSearchOpen} toggleSearch={toggleSearch} />
+        {/* Mobile Search Bar */}
+        <div className="mt-2 md:hidden">
+          <SearchBar />
+        </div>
       </div>
-    </nav>
+    </header>
   );
 };
 

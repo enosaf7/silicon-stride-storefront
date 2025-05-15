@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import {
   Sheet,
   SheetContent,
@@ -73,11 +73,7 @@ const UserMessages = () => {
         .rpc('get_user_messages', { user_id: user.id });
 
       if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load messages",
-          variant: "destructive"
-        });
+        toast.error("Failed to load messages");
         throw error;
       }
       
@@ -142,17 +138,14 @@ const UserMessages = () => {
         
       if (error) throw error;
       
+      toast.success("Message sent successfully");
       setNewMessage('');
       setAttachment(null);
       setReplyingTo(null);
       refetchMessages();
     } catch (error) {
       console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive"
-      });
+      toast.error("Failed to send message");
     } finally {
       setIsSubmitting(false);
     }
@@ -273,7 +266,7 @@ const UserMessages = () => {
             </div>
           ) : (
             <div className="flex-grow flex items-center justify-center text-gray-500">
-              No messages yet
+              No messages yet. Need assistance? Send us a message and our customer support team will get back to you soon!
             </div>
           )}
         </div>
@@ -308,7 +301,7 @@ const UserMessages = () => {
           
           <div className="flex">
             <Textarea
-              placeholder="Type your message..."
+              placeholder="Type your message to customer support..."
               className="min-h-[60px] flex-grow rounded-r-none"
               value={newMessage}
               onChange={e => setNewMessage(e.target.value)}
