@@ -94,8 +94,8 @@ serve(async (req) => {
           <td style="padding: 10px; border-bottom: 1px solid #eee;">${product?.name}</td>
           <td style="padding: 10px; border-bottom: 1px solid #eee;">Size ${item.size}</td>
           <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.quantity}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">$${price.toFixed(2)}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">$${(price * item.quantity).toFixed(2)}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">₵${price.toFixed(2)}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">₵${(price * item.quantity).toFixed(2)}</td>
         </tr>
       `;
     }).join("");
@@ -146,15 +146,15 @@ serve(async (req) => {
               <tfoot>
                 <tr>
                   <td colspan="4" style="padding: 10px; text-align: right;">Subtotal:</td>
-                  <td style="padding: 10px;">$${subtotal.toFixed(2)}</td>
+                  <td style="padding: 10px;">₵${subtotal.toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colspan="4" style="padding: 10px; text-align: right;">Shipping:</td>
-                  <td style="padding: 10px;">${shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}</td>
+                  <td style="padding: 10px;">${shippingCost === 0 ? "Free" : `₵${shippingCost.toFixed(2)}`}</td>
                 </tr>
                 <tr class="total-row">
                   <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">Total:</td>
-                  <td style="padding: 10px; font-weight: bold;">$${order.total.toFixed(2)}</td>
+                  <td style="padding: 10px; font-weight: bold;">₵${order.total.toFixed(2)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -196,7 +196,7 @@ serve(async (req) => {
 *New Order #${orderReference}*
 Customer: ${userData.first_name} ${userData.last_name}
 Email: ${userEmail}
-Total: $${order.total.toFixed(2)}
+Total: ₵${order.total.toFixed(2)}
 Items: ${orderItems.length}
 
 *Order Details:*

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { formatCedi } from '@/lib/utils';
 
 interface PopularProduct {
   id: string;
@@ -78,7 +79,7 @@ const PopularProducts: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <p className="font-bold">${product.price.toFixed(2)}</p>
+                <p className="font-bold">{formatCedi(product.price)}</p>
               </div>
             ))}
           </div>

@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/utils/types';
 import { Star } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCedi } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -58,15 +58,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
             {product.discount ? (
               <div className="flex items-center gap-2">
                 <span className="text-lg font-semibold text-brand-orange">
-                  ${(product.price * (1 - product.discount / 100)).toFixed(2)}
+                  {formatCedi(product.price * (1 - product.discount / 100))}
                 </span>
                 <span className="text-sm text-gray-500 line-through">
-                  ${product.price.toFixed(2)}
+                  {formatCedi(product.price)}
                 </span>
               </div>
             ) : (
               <span className="text-lg font-semibold text-brand-black">
-                ${product.price.toFixed(2)}
+                {formatCedi(product.price)}
               </span>
             )}
           </div>

@@ -20,6 +20,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { formatCedi } from '@/lib/utils';
 
 interface Order {
   id: string;
@@ -110,7 +111,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
                     {new Date(order.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    ${order.total.toFixed(2)}
+                    {formatCedi(order.total)}
                   </TableCell>
                   <TableCell>
                     <Select

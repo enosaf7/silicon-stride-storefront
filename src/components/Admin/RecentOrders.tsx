@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { formatCedi } from '@/lib/utils';
 
 interface Profile {
   first_name: string | null;
@@ -105,7 +106,7 @@ const RecentOrders: React.FC = () => {
                   <Badge variant="outline" className={getStatusColor(order.status)}>
                     {order.status}
                   </Badge>
-                  <p className="font-bold">${order.total.toFixed(2)}</p>
+                  <p className="font-bold">{formatCedi(order.total)}</p>
                 </div>
               </div>
             ))}

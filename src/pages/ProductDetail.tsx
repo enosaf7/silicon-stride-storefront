@@ -11,6 +11,7 @@ import ReviewSection from '@/components/ReviewSection';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { formatCedi } from '@/lib/utils';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -191,17 +192,17 @@ const ProductDetail: React.FC = () => {
                   {product.discount ? (
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold">
-                        ${(product.price - (product.price * product.discount / 100)).toFixed(2)}
+                        {formatCedi(product.price - (product.price * product.discount / 100))}
                       </span>
                       <span className="text-lg text-gray-500 line-through">
-                        ${product.price.toFixed(2)}
+                        {formatCedi(product.price)}
                       </span>
                       <span className="bg-red-100 text-red-600 text-sm px-2 py-1 rounded">
                         {product.discount}% OFF
                       </span>
                     </div>
                   ) : (
-                    <span className="text-2xl font-bold">${product.price.toFixed(2)}</span>
+                    <span className="text-2xl font-bold">{formatCedi(product.price)}</span>
                   )}
                 </div>
                 

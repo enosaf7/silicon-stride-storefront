@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -7,6 +6,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
+import { formatCedi } from '@/lib/utils';
 import {
   Form,
   FormControl,
@@ -88,7 +88,7 @@ const MoMoCheckout = () => {
         ? item.product?.price * (1 - (item.product?.discount / 100))
         : item.product?.price || 0;
       
-      return `${item.product?.name} (Size ${item.size}) x ${item.quantity} - $${(price * item.quantity).toFixed(2)}`;
+      return `${item.product?.name} (Size ${item.size}) x ${item.quantity} - ₵${(price * item.quantity).toFixed(2)}`;
     }).join('\n');
     
     return `
@@ -97,7 +97,7 @@ New MoMo Payment Confirmation:
 Order Reference: ${orderRef}
 Customer Name: ${values.customerName}
 Phone Number: ${values.phoneNumber}
-Total Amount: $${totalCost.toFixed(2)}
+Total Amount: ₵${totalCost.toFixed(2)}
 
 Items:
 ${items}
@@ -157,7 +157,7 @@ ${items}
                             Size: {item.size} | Qty: {item.quantity}
                           </p>
                         </div>
-                        <p className="font-semibold">${(itemPrice * item.quantity).toFixed(2)}</p>
+                        <p className="font-semibold">{formatCedi(itemPrice * item.quantity)}</p>
                       </div>
                     );
                   })}
@@ -166,12 +166,12 @@ ${items}
                 <div className="mt-4 pt-4 border-t border-gray-100">
                   <div className="flex justify-between mb-2">
                     <span className="text-gray-600">Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatCedi(subtotal)}</span>
                   </div>
                   
                   <div className="flex justify-between font-semibold text-lg mt-2 pt-2 border-t border-gray-100">
                     <span>Total</span>
-                    <span className="text-brand-orange">${totalCost.toFixed(2)}</span>
+                    <span className="text-brand-orange">{formatCedi(totalCost)}</span>
                   </div>
                 </div>
               </div>

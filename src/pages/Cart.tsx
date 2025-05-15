@@ -9,6 +9,7 @@ import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatCedi } from '@/lib/utils';
 
 const Cart: React.FC = () => {
   const { 
@@ -240,7 +241,7 @@ const Cart: React.FC = () => {
                               </div>
                               
                               <div className="font-semibold text-lg">
-                                ${(itemPrice * item.quantity).toFixed(2)}
+                                {formatCedi(itemPrice * item.quantity)}
                               </div>
                             </div>
                           </div>
@@ -259,13 +260,13 @@ const Cart: React.FC = () => {
                   <div className="space-y-4 mb-6">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Subtotal</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>{formatCedi(subtotal)}</span>
                     </div>
                     
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
                       <span>
-                        {shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}
+                        {shippingCost === 0 ? 'Free' : formatCedi(shippingCost)}
                       </span>
                     </div>
                     
@@ -273,7 +274,7 @@ const Cart: React.FC = () => {
                     
                     <div className="flex justify-between text-lg font-semibold">
                       <span>Total</span>
-                      <span>${totalCost.toFixed(2)}</span>
+                      <span>{formatCedi(totalCost)}</span>
                     </div>
                   </div>
                   

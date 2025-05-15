@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ShoppingBag, Users, Package, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatCediFull } from '@/lib/utils';
 
 interface StatsResponse {
   ordersCount: number;
@@ -61,7 +62,7 @@ const DashboardStats: React.FC = () => {
     },
     {
       title: 'Total Revenue',
-      value: `$${(stats?.totalRevenue || 0).toFixed(2)}`,
+      value: formatCediFull(stats?.totalRevenue || 0),
       icon: <CreditCard className="h-8 w-8 text-brand-orange" />,
       color: 'bg-orange-50'
     }
