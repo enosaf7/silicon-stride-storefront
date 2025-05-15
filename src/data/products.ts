@@ -8,7 +8,7 @@ export const products: Product[] = [
     category: 'shoes',
     price: 199.99,
     images: [
-      'https://drive.google.com/file/d/1PM7f4mTjGfQbFFs7Hac09NzERX5XrTtn/view?usp=drive_link',
+      'https://drive.google.com/file/d/1-dlOMoFwc_U85Y8l7ZxPxcNohl1fD2US/view?usp=sharing, https://drive.google.com/file/d/11E0oWi1kdQ1HXuIybDhtFP7hfZWsJXjC/view?usp=sharing, https://drive.google.com/file/d/1CTeGJr7wme9wzsyNFlSb7FcdWt5qjtpk/view?usp=sharing, https://drive.google.com/file/d/1GRqtkAlN6vdA1244wuEQZWbbyJUAd4Lw/view?usp=sharing, https://drive.google.com/file/d/1HG_jJ0jSC8R8mTpwtUC3c-7zBBGpNU8k/view?usp=sharing, https://drive.google.com/file/d/1J-qfEMDIiGOu653kBH2GD9AwS932vjch/view?usp=sharing, https://drive.google.com/file/d/1JrZVV5Iejune4ALaHY1hegfltRuWExh_/view?usp=sharing, https://drive.google.com/file/d/1Nnayc4URGd7Q7s7JZQ0fCFcEzzwtw6Vl/view?usp=sharing, https://drive.google.com/file/d/1PM7f4mTjGfQbFFs7Hac09NzERX5XrTtn/view?usp=sharing, https://drive.google.com/file/d/1Xbk_8a0sGpyjdKazn7jBWWoPKetsxL0r/view?usp=sharing, https://drive.google.com/file/d/1Ynodp2PsIA_mrvkb3F1wOcrEQ3Wmor1a/view?usp=sharing, https://drive.google.com/file/d/1bJuvARkYpyPPdPCoy_OrfmO8d7BTWeyu/view?usp=sharing, https://drive.google.com/file/d/1rLeHXamgm4Cp2bEa9IC7KvQsnr52ZB-Y/view?usp=sharing, https://drive.google.com/file/d/1tMzyhwxnk5cad7cnkN0exRQ2t2n-0Xc8/view?usp=sharing, https://drive.google.com/file/d/1xdeqFf_OHBgX4w6325MWsnjzD0eNYo99/view?usp=sharing',
       'https://drive.google.com/file/d/1GRqtkAlN6vdA1244wuEQZWbbyJUAd4Lw/view?usp=drive_link'
     ],
     description: 'Our flagship executive oxford shoes featuring advanced silicon cushioning for maximum comfort and professional style. Perfect for business meetings and formal events.',
