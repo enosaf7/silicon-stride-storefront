@@ -8,8 +8,8 @@ export const products: Product[] = [
     category: 'shoes',
     price: 199.99,
     images: [
-      'https://imgur.com/3djGigI',
-      'https://imgur.com/t7EpmzM'
+      'https://i.imgur.com/3djGigI.jpeg',
+      'https://imgur.com/t7EpmzM.jpeg'
     ],
     description: 'Our flagship executive oxford shoes featuring advanced silicon cushioning for maximum comfort and professional style. Perfect for business meetings and formal events.',
     sizes: [7, 8, 9, 10, 11, 12],
