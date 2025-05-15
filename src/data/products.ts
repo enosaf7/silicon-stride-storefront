@@ -24,8 +24,8 @@ export const products: Product[] = [
     category: 'shoes',
     price: 239.99,
     images: [
-      'https://drive.google.com/file/d/1HG_jJ0jSC8R8mTpwtUC3c-7zBBGpNU8k/view?usp=drive_link',
-      'https://drive.google.com/file/d/1Xbk_8a0sGpyjdKazn7jBWWoPKetsxL0r/view?usp=drive_link'
+      'https://imgur.com/t7EpmzM.jpeg',
+      'https://imgur.com/KANCdK5.jpeg'
     ],
     description: 'Premium Italian leather derby shoes with silicon-infused memory foam for the ultimate comfort. Your feet deserve this luxury for long business days.',
     sizes: [6, 7, 8, 9, 10, 11],
@@ -40,8 +40,8 @@ export const products: Product[] = [
     category: 'sandals',
     price: 259.99,
     images: [
-      'https://drive.google.com/file/d/11E0oWi1kdQ1HXuIybDhtFP7hfZWsJXjC/view?usp=drive_link',
-      'https://drive.google.com/file/d/1Ynodp2PsIA_mrvkb3F1wOcrEQ3Wmor1a/view?usp=drive_link'
+      'https://imgur.com/8Y9d5CR,jpeg',
+      'https://imgur.com/GUNiQp7.jpeg'
     ],
     description: 'elegant sophisticated Zara Branded Sandal. Limited edition.',
     sizes: [7, 8, 9, 10, 11, 12],
@@ -56,8 +56,8 @@ export const products: Product[] = [
     category: 'slippers',
     price: 189.99,
     images: [
-      'https://drive.google.com/file/d/1tMzyhwxnk5cad7cnkN0exRQ2t2n-0Xc8/view?usp=drive_link',
-      'https://drive.google.com/file/d/1bJuvARkYpyPPdPCoy_OrfmO8d7BTWeyu/view?usp=drive_link'
+      'https://imgur.com/MHAMWgR.jpeg',
+      'https://imgur.com/GDdWm8u.jpeg'
     ],
     description: 'Lightweight and flexible leather slippers designed for comfort during long days. Features our patented Silicon Flex technology.',
     sizes: [7, 8, 9, 10, 11],
@@ -73,7 +73,7 @@ export const products: Product[] = [
     category: 'shoes',
     price: 219.99,
     images: [
-      'https://images.unsplash.com/photo-1613592743574-3447394077dd',
+      'https://imgur.com/KANCdK5.jpeg',
       'https://images.unsplash.com/photo-1614252235429-a05507e8118b'
     ],
     description: 'Distinguished monk strap shoes with silicon cushioned footbed. Perfect for making a statement in the boardroom.',
@@ -89,7 +89,7 @@ export const products: Product[] = [
     category: 'shoes',
     price: 249.99,
     images: [
-      'https://drive.google.com/file/d/1PM7f4mTjGfQbFFs7Hac09NzERX5XrTtn/view?usp=drive_link',
+      'https://imgur.com/lE4JyRv.jpeg',
       'https://drive.google.com/file/d/1GRqtkAlN6vdA1244wuEQZWbbyJUAd4Lw/view?usp=drive_link'
     ],
     description: 'Professional look meets unmatched comfort with our silicon-cushioned oxford shoes. Perfect for long days at the office.',
