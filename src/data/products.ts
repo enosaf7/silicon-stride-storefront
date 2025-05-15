@@ -8,8 +8,8 @@ export const products: Product[] = [
     category: 'shoes',
     price: 199.99,
     images: [
-      'https://www.google.com/imgres?q=oxford%20shoes&imgurl=https%3A%2F%2Fgh.jumia.is%2Funsafe%2Ffit-in%2F500x500%2Ffilters%3Afill(white)%2Fproduct%2F99%2F7301931%2F1.jpg%3F8230&imgrefurl=https%3A%2F%2Fwww.jumia.com.gh%2Ffashion-womens-authentic-leather-oxford-shoes-139103799.html&docid=XaFK2fSD2Lw6RM&tbnid=VqmHfAEbiQlYxM&vet=12ahUKEwitmaa-uqSNAxVfX0EAHfczHRMQM3oECGkQAA..i&w=500&h=500&hcb=2&ved=2ahUKEwitmaa-uqSNAxVfX0EAHfczHRMQM3oECGkQAA',
-      'https://www.google.com/imgres?q=oxford%20shoes&imgurl=https%3A%2F%2Fdeeryshoes.com%2F20482-thickbox_default%2Fblack-calfskin-leather-lace-up-oxford-shoes-01418zsyhe05.jpg&imgrefurl=https%3A%2F%2Fdeeryshoes.com%2Fblack-calfskin-leather-lace-up-oxford-shoes-01418zsyhe05&docid=Ko7VI7iBJbJjnM&tbnid=iPlTCMBTke2LTM&vet=12ahUKEwitmaa-uqSNAxVfX0EAHfczHRMQM3oECHEQAA..i&w=1000&h=1300&hcb=2&ved=2ahUKEwitmaa-uqSNAxVfX0EAHfczHRMQM3oECHEQAA'
+      'https://imgur.com/3djGigI',
+      'https://imgur.com/t7EpmzM'
     ],
     description: 'Our flagship executive oxford shoes featuring advanced silicon cushioning for maximum comfort and professional style. Perfect for business meetings and formal events.',
     sizes: [7, 8, 9, 10, 11, 12],
