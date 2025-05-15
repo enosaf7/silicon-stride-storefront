@@ -9,7 +9,7 @@ export const products: Product[] = [
     price: 199.99,
     images: [
       'blob:https://web.whatsapp.com/a9350349-958c-4df7-8393-bb8673f66de7',
-      'https://drive.google.com/file/d/1GRqtkAlN6vdA1244wuEQZWbbyJUAd4Lw/view?usp=drive_link'
+      'blob:https://web.whatsapp.com/a9350349-958c-4df7-8393-bb8673f66de7'
     ],
     description: 'Our flagship executive oxford shoes featuring advanced silicon cushioning for maximum comfort and professional style. Perfect for business meetings and formal events.',
     sizes: [7, 8, 9, 10, 11, 12],
