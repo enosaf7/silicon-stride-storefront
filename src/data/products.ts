@@ -8,8 +8,8 @@ export const products: Product[] = [
     category: 'shoes',
     price: 199.99,
     images: [
-      'https://images.unsplash.com/photo-1560343090-f0409e92791a',
-      'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4'
+      'https://drive.google.com/file/d/1PM7f4mTjGfQbFFs7Hac09NzERX5XrTtn/view?usp=drive_link',
+      'https://drive.google.com/file/d/1GRqtkAlN6vdA1244wuEQZWbbyJUAd4Lw/view?usp=drive_link'
     ],
     description: 'Our flagship executive oxford shoes featuring advanced silicon cushioning for maximum comfort and professional style. Perfect for business meetings and formal events.',
     sizes: [7, 8, 9, 10, 11, 12],
@@ -24,8 +24,8 @@ export const products: Product[] = [
     category: 'shoes',
     price: 239.99,
     images: [
-      'https://images.unsplash.com/photo-1543665545-a5a845c3e2dc',
-      'https://images.unsplash.com/photo-1531310197839-ccf54634509e'
+      'https://drive.google.com/file/d/1HG_jJ0jSC8R8mTpwtUC3c-7zBBGpNU8k/view?usp=drive_link',
+      'https://drive.google.com/file/d/1Xbk_8a0sGpyjdKazn7jBWWoPKetsxL0r/view?usp=drive_link'
     ],
     description: 'Premium Italian leather derby shoes with silicon-infused memory foam for the ultimate comfort. Your feet deserve this luxury for long business days.',
     sizes: [6, 7, 8, 9, 10, 11],
@@ -36,14 +36,14 @@ export const products: Product[] = [
   },
   {
     id: '3',
-    name: 'Formal Wing-tip Brogue',
-    category: 'shoes',
+    name: 'Zara Branded Sandals',
+    category: 'sandals',
     price: 259.99,
     images: [
-      'https://images.unsplash.com/photo-1614252369475-531eba835eb1',
-      'https://images.unsplash.com/photo-1678732841792-159fb692854b'
+      'https://drive.google.com/file/d/11E0oWi1kdQ1HXuIybDhtFP7hfZWsJXjC/view?usp=drive_link',
+      'https://drive.google.com/file/d/1Ynodp2PsIA_mrvkb3F1wOcrEQ3Wmor1a/view?usp=drive_link'
     ],
-    description: 'Elegant and sophisticated brogue shoes with silicon-reinforced soles for superior comfort and durability. Perfect for weddings and special occasions.',
+    description: 'elegant sophisticated Zara Branded Sandal. Limited edition.',
     sizes: [7, 8, 9, 10, 11, 12],
     colors: ['#000000', '#964B00'],
     stock: 30,
@@ -52,14 +52,14 @@ export const products: Product[] = [
   },
   {
     id: '4',
-    name: 'Business Loafer Pro',
-    category: 'shoes',
+    name: 'Quality Slippers',
+    category: 'slippers',
     price: 189.99,
     images: [
-      'https://images.unsplash.com/photo-1533867617858-e7b97e060509',
-      'https://images.unsplash.com/photo-1561997847-77a236bd864f'
+      'https://drive.google.com/file/d/1tMzyhwxnk5cad7cnkN0exRQ2t2n-0Xc8/view?usp=drive_link',
+      'https://drive.google.com/file/d/1bJuvARkYpyPPdPCoy_OrfmO8d7BTWeyu/view?usp=drive_link'
     ],
-    description: 'Lightweight and flexible business loafers designed for comfort during long workdays. Features our patented Silicon Flex technology.',
+    description: 'Lightweight and flexible leather slippers designed for comfort during long days. Features our patented Silicon Flex technology.',
     sizes: [7, 8, 9, 10, 11],
     colors: ['#000000', '#964B00', '#8B4513'],
     stock: 40,
@@ -89,8 +89,8 @@ export const products: Product[] = [
     category: 'shoes',
     price: 249.99,
     images: [
-      'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4',
-      'https://images.unsplash.com/photo-1609188076864-c35269136b09'
+      'https://drive.google.com/file/d/1PM7f4mTjGfQbFFs7Hac09NzERX5XrTtn/view?usp=drive_link',
+      'https://drive.google.com/file/d/1GRqtkAlN6vdA1244wuEQZWbbyJUAd4Lw/view?usp=drive_link'
     ],
     description: 'Professional look meets unmatched comfort with our silicon-cushioned oxford shoes. Perfect for long days at the office.',
     sizes: [8, 9, 10, 11, 12],
