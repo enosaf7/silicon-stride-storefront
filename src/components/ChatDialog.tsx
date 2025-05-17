@@ -237,14 +237,17 @@ const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) => {
             <div className="mb-2 p-2 bg-gray-100 rounded-md text-sm relative">
               <p className="font-medium">Replying to:</p>
               <p className="truncate text-gray-600">{replyingTo.content}</p>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-1 right-1 h-6 w-6"
-                onClick={() => setReplyingTo(null)}
+              <Button 
+                className="flex-grow rounded-l-none bg-brand-orange hover:bg-brand-orange/90"
+                onClick={sendMessage}
+                disabled={isSubmitting || !newMessage.trim() || !adminId}
               >
-                <X className="h-3 w-3" />
-              </Button>
+                {isSubmitting ? (
+                  <Loader className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+            </Button>
             </div>
           )}
           
