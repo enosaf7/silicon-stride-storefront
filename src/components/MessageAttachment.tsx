@@ -19,9 +19,6 @@ export const MessageAttachment: React.FC<MessageAttachmentProps> = ({ onAttach }
     setUploading(true);
     
     try {
-      // Check if the bucket exists, create if not (this is handled server-side)
-      const { error: bucketError } = await supabase.storage.getBucket('message-attachments');
-      
       // Generate a unique file name to prevent collisions
       const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
       
