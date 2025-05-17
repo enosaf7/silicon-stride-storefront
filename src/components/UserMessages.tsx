@@ -4,11 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,6 +26,11 @@ interface Message {
   reply_content?: string;
 }
 
+interface Attachment {
+  url: string;
+  type: string;
+}
+
 const UserMessages = () => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -37,10 +38,11 @@ const UserMessages = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [adminId, setAdminId] = useState<string | null>(null);
-  const [attachment, setAttachment] = useState<{ url: string; type: string } | null>(null);
+  const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [noAdmin, setNoAdmin] = useState(false);
 
-  // Get admin user ID for messaging
+  // Get admin user ID
   useEffect(() => {
     const fetchAdminId = async () => {
       try {
@@ -49,28 +51,31 @@ const UserMessages = () => {
           .select('user_id')
           .eq('role', 'admin')
           .limit(1);
-          
+
         if (error) {
           console.error('Error fetching admin:', error);
+          setNoAdmin(true);
           return;
         }
-        
+
         if (data && data.length > 0) {
           setAdminId(data[0].user_id);
+          setNoAdmin(false);
         } else {
-          console.error('No admin user found');
+          setNoAdmin(true);
         }
       } catch (err) {
+        setNoAdmin(true);
         console.error('Failed to fetch admin ID:', err);
       }
     };
-    
+
     if (user) {
       fetchAdminId();
     }
   }, [user]);
 
-  // Fetch messages using RPC to avoid type issues
+  // Fetch messages
   const { data: messagesData, refetch: refetchMessages } = useQuery({
     queryKey: ['user-messages', user?.id],
     queryFn: async () => {
@@ -85,8 +90,8 @@ const UserMessages = () => {
           toast.error("Failed to load messages");
           return [] as Message[];
         }
-        
-        // For each message, check if it's a reply and fetch the original message content
+
+        // Attach reply preview
         const enhancedMessages = await Promise.all((data || []).map(async (msg: any) => {
           if (msg.reply_to) {
             const { data: replyData } = await supabase
@@ -94,7 +99,6 @@ const UserMessages = () => {
               .select('content')
               .eq('id', msg.reply_to)
               .single();
-              
             return {
               ...msg,
               reply_content: replyData?.content || 'Original message not found'
@@ -102,7 +106,7 @@ const UserMessages = () => {
           }
           return msg;
         }));
-        
+
         return enhancedMessages as Message[];
       } catch (err) {
         console.error('Error in message fetching:', err);
@@ -111,10 +115,9 @@ const UserMessages = () => {
       }
     },
     enabled: !!user,
-    refetchInterval: open ? 5000 : 30000, // Refresh every 5s when open, otherwise every 30s
+    refetchInterval: open ? 5000 : 30000,
   });
 
-  // Safely access messages data
   const messages = messagesData || [];
 
   // Count unread messages
@@ -127,15 +130,13 @@ const UserMessages = () => {
     }
   }, [messages, user]);
 
-  // Mark messages as read when opening the sheet
+  // Mark as read when open
   useEffect(() => {
     if (open && user && messages.length > 0) {
       const unreadMessages = messages.filter(
         msg => msg.receiver_id === user.id && !msg.is_read
       );
-      
       if (unreadMessages.length > 0) {
-        // Use the rpc function but handle the promise differently
         supabase
           .rpc('mark_messages_as_read', {
             user_id: user.id,
@@ -149,9 +150,7 @@ const UserMessages = () => {
             setUnreadCount(0);
             refetchMessages();
           })
-          .then(undefined, (error) => { 
-            // Using .then(undefined, errorHandler) instead of .catch()
-            // This is compatible with PromiseLike<void>
+          .then(undefined, (error) => {
             console.error('Failed to mark messages as read:', error);
           });
       }
@@ -159,25 +158,28 @@ const UserMessages = () => {
   }, [open, user, messages, refetchMessages]);
 
   const sendMessage = async () => {
-    if (!user || !adminId || (!newMessage.trim() && !attachment)) return;
-    
+    if (!user || !adminId || (!newMessage.trim() && !attachment)) {
+      if (!adminId) toast.error('No admin available to receive your message.');
+      return;
+    }
+
     setIsSubmitting(true);
-    
+
     try {
       const { error } = await supabase
         .from('messages')
-        .insert({
+        .insert([{
           sender_id: user.id,
           receiver_id: adminId,
           content: newMessage,
           is_read: false,
-          attachment_url: attachment?.url,
-          attachment_type: attachment?.type,
-          reply_to: replyingTo?.id
-        });
-        
+          attachment_url: attachment?.url || null,
+          attachment_type: attachment?.type || null,
+          reply_to: replyingTo?.id || null
+        }]);
+
       if (error) throw error;
-      
+
       toast.success("Message sent successfully");
       setNewMessage('');
       setAttachment(null);
@@ -195,13 +197,8 @@ const UserMessages = () => {
     setAttachment({ url, type });
   };
 
-  const handleReply = (message: Message) => {
-    setReplyingTo(message);
-  };
-
-  const cancelReply = () => {
-    setReplyingTo(null);
-  };
+  const handleReply = (message: Message) => setReplyingTo(message);
+  const cancelReply = () => setReplyingTo(null);
 
   if (!user) return null;
 
@@ -213,9 +210,9 @@ const UserMessages = () => {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="relative"
           aria-label="Messages"
         >
@@ -231,27 +228,26 @@ const UserMessages = () => {
         <SheetHeader>
           <SheetTitle>Messages</SheetTitle>
         </SheetHeader>
-        
         <div className="flex-grow overflow-y-auto mt-6 mb-4 flex flex-col-reverse">
           {messages.length > 0 ? (
             <div className="space-y-4">
               {messages.map(message => (
-                <div 
-                  key={message.id} 
+                <div
+                  key={message.id}
                   className={`flex ${message.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div 
+                  <div
                     className={`relative p-3 rounded-lg max-w-[85%] ${
-                      message.sender_id === user.id 
-                        ? 'bg-brand-orange text-white' 
+                      message.sender_id === user.id
+                        ? 'bg-brand-orange text-white'
                         : 'bg-gray-100'
                     }`}
                   >
-                    {/* Reply preview if this message is a reply */}
+                    {/* Reply preview */}
                     {message.reply_to && (
                       <div className={`text-xs mb-2 p-2 rounded ${
-                        message.sender_id === user.id 
-                          ? 'bg-white/10 text-white/90' 
+                        message.sender_id === user.id
+                          ? 'bg-white/10 text-white/90'
                           : 'bg-gray-200 text-gray-700'
                       }`}>
                         <p className="font-semibold">
@@ -264,34 +260,33 @@ const UserMessages = () => {
                     )}
 
                     <p>{message.content}</p>
-                    
+
                     {/* Attachment Preview */}
                     {message.attachment_url && (
                       <div className="mt-2">
-                        <AttachmentPreview 
-                          url={message.attachment_url} 
-                          type={message.attachment_type || 'file'} 
+                        <AttachmentPreview
+                          url={message.attachment_url}
+                          type={message.attachment_type || 'file'}
                           className="max-w-full"
                         />
                       </div>
                     )}
-                    
+
                     <div className="flex justify-between items-center mt-1">
                       <p className={`text-xs ${
-                        message.sender_id === user.id 
-                          ? 'text-white/70' 
+                        message.sender_id === user.id
+                          ? 'text-white/70'
                           : 'text-gray-500'
                       }`}>
                         {formatDate(message.created_at)}
                       </p>
-                      
                       {message.sender_id !== user.id && (
                         <Button
                           variant="ghost"
                           size="icon"
                           className={`h-5 w-5 ml-2 ${
-                            message.sender_id === user.id 
-                              ? 'text-white/80 hover:text-white' 
+                            message.sender_id === user.id
+                              ? 'text-white/80 hover:text-white'
                               : 'text-gray-500 hover:text-gray-700'
                           }`}
                           onClick={() => handleReply(message)}
@@ -310,8 +305,12 @@ const UserMessages = () => {
             </div>
           )}
         </div>
-        
         <div className="mt-auto border-t pt-4">
+          {noAdmin && (
+            <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-md text-sm">
+              No admin available to receive your message at this time.
+            </div>
+          )}
           {/* Reply preview */}
           {replyingTo && (
             <div className="mb-2 p-2 bg-gray-100 rounded-md text-sm relative">
@@ -327,18 +326,16 @@ const UserMessages = () => {
               </Button>
             </div>
           )}
-          
           {/* Attachment preview */}
           {attachment && (
             <div className="mb-2">
-              <AttachmentPreview 
-                url={attachment.url} 
-                type={attachment.type} 
-                onRemove={() => setAttachment(null)} 
+              <AttachmentPreview
+                url={attachment.url}
+                type={attachment.type}
+                onRemove={() => setAttachment(null)}
               />
             </div>
           )}
-          
           <div className="flex">
             <Textarea
               placeholder="Type your message to customer support..."
@@ -351,19 +348,19 @@ const UserMessages = () => {
                   sendMessage();
                 }
               }}
+              disabled={noAdmin}
             />
             <div className="flex flex-col">
               <MessageAttachment onAttach={handleAttachment} />
-              <Button 
+              <Button
                 className="flex-grow rounded-l-none bg-brand-orange hover:bg-brand-orange/90"
                 onClick={sendMessage}
-                disabled={isSubmitting || (!newMessage.trim() && !attachment) || !adminId}
+                disabled={isSubmitting || (!newMessage.trim() && !attachment) || !adminId || noAdmin}
               >
-                {isSubmitting ? (
-                  <Loader className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
+                {isSubmitting
+                  ? <Loader className="h-4 w-4 animate-spin" />
+                  : <Send className="h-4 w-4" />
+                }
               </Button>
             </div>
           </div>
