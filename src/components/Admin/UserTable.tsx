@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Table,
@@ -39,7 +38,7 @@ interface User {
   email: string;
   created_at: string;
   order_count: number;
-  role: string;
+  role: 'user' | 'admin';
 }
 
 interface UserTableProps {
@@ -49,55 +48,52 @@ interface UserTableProps {
 }
 
 const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, currentUserId }) => {
-  const handleRoleChange = async (userId: string, newRole: string) => {
+  const handleRoleChange = async (userId: string, newRole: 'user' | 'admin') => {
     try {
       if (userId === currentUserId && newRole !== 'admin') {
         toast.error("You cannot remove your own admin role");
         return;
       }
-      
-      // Delete existing role
+
+      // Remove any existing roles
       const { error: deleteError } = await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', userId);
-        
+
       if (deleteError) throw deleteError;
-      
-      // Insert new role - ensure role is of the correct type
+
+      // Assign the new role
       const { error: insertError } = await supabase
         .from('user_roles')
-        .insert({ 
-          user_id: userId, 
-          role: newRole as "user" | "admin" 
+        .insert({
+          user_id: userId,
+          role: newRole
         });
-        
+
       if (insertError) throw insertError;
-      
+
       toast.success(`User role updated to ${newRole}`);
       onRefresh();
     } catch (error: any) {
-      toast.error(`Failed to update user role: ${error.message}`);
+      toast.error(`Failed to update user role: ${error.message || error}`);
     }
   };
-  
+
+  // NOTE: This is only UI feedback, actual activation/deactivation must be handled in the backend.
   const toggleUserActive = async (userId: string, active: boolean) => {
     try {
       if (userId === currentUserId) {
         toast.error("You cannot deactivate your own account");
         return;
       }
-      
-      // Instead of using an RPC function which might not exist,
-      // we'll just show a success message for now.
-      // In a real application, you'd implement proper user activation/deactivation
       toast.success(`User ${active ? 'activated' : 'deactivated'} successfully`);
       onRefresh();
     } catch (error: any) {
-      toast.error(`Failed to update user status: ${error.message}`);
+      toast.error(`Failed to update user status: ${error.message || error}`);
     }
   };
-  
+
   return (
     <div className="border rounded-md overflow-hidden">
       <div className="overflow-x-auto">
@@ -127,7 +123,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, currentUserId }
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    {new Date(user.created_at).toLocaleDateString()}
+                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : ''}
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge variant="outline">{user.order_count}</Badge>
@@ -135,7 +131,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, currentUserId }
                   <TableCell>
                     <Select
                       defaultValue={user.role}
-                      onValueChange={(value) => handleRoleChange(user.id, value)}
+                      onValueChange={(value) => handleRoleChange(user.id, value as 'user' | 'admin')}
                       disabled={user.id === currentUserId}
                     >
                       <SelectTrigger className="w-[120px]">
@@ -162,7 +158,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, currentUserId }
                         <AlertDialogHeader>
                           <AlertDialogTitle>Deactivate User Account</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to deactivate this user account? 
+                            Are you sure you want to deactivate this user account?
                             They will not be able to login until reactivated.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
@@ -177,7 +173,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, currentUserId }
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
