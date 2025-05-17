@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileIcon, ImageIcon, Paperclip, VideoIcon, X } from 'lucide-react';
+import { FileIcon, ImageIcon, VideoIcon, Paperclip, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -19,28 +19,30 @@ export const MessageAttachment: React.FC<MessageAttachmentProps> = ({ onAttach }
     setUploading(true);
     
     try {
-      // Check if the bucket exists, create if not
+      // Check if the bucket exists, create if not (this is handled server-side)
       const { error: bucketError } = await supabase.storage.getBucket('message-attachments');
-      if (bucketError && bucketError.message.includes('not found')) {
-        await supabase.storage.createBucket('message-attachments', {
-          public: true,
-          fileSizeLimit: 20971520, // 20MB
-        });
-        console.log('Created message-attachments bucket');
-      }
+      
+      // Generate a unique file name to prevent collisions
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
       
       // Upload the file
-      const fileName = `${Date.now()}-${file.name}`;
       const { data, error } = await supabase.storage
         .from('message-attachments')
         .upload(`messages/${fileName}`, file);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Upload error:', error);
+        throw error;
+      }
       
       // Get the public URL
-      const { data: publicURL } = supabase.storage
+      const { data: publicURLData } = supabase.storage
         .from('message-attachments')
         .getPublicUrl(`messages/${fileName}`);
+      
+      if (!publicURLData || !publicURLData.publicUrl) {
+        throw new Error('Failed to get public URL');
+      }
       
       // Determine file type
       let fileType = 'file';
@@ -48,8 +50,10 @@ export const MessageAttachment: React.FC<MessageAttachmentProps> = ({ onAttach }
       else if (file.type.startsWith('video/')) fileType = 'video';
       else if (file.type.startsWith('audio/')) fileType = 'audio';
       
-      onAttach(publicURL.publicUrl, fileType);
+      onAttach(publicURLData.publicUrl, fileType);
+      toast.success('File uploaded successfully');
     } catch (error: any) {
+      console.error('File upload error:', error);
       toast.error(`File upload failed: ${error.message}`);
     } finally {
       setUploading(false);

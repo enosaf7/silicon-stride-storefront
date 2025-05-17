@@ -9,7 +9,13 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 // Extending supabase.rpc with our custom functions to make typescript happy
 const originalRpc = supabase.rpc.bind(supabase);
@@ -18,8 +24,25 @@ supabase.rpc = (fn: string, ...args: any[]) => {
   if (fn === 'get_admin_conversations' || 
       fn === 'get_user_messages' || 
       fn === 'get_conversation_messages' || 
-      fn === 'mark_messages_as_read') {
+      fn === 'mark_messages_as_read' ||
+      fn === 'has_role') {
     return originalRpc(fn, ...args);
   }
   return originalRpc(fn, ...args);
 };
+
+// Create the message-attachments bucket if it doesn't exist (on app init)
+(async () => {
+  try {
+    const { error: bucketError } = await supabase.storage.getBucket('message-attachments');
+    if (bucketError && bucketError.message.includes('not found')) {
+      await supabase.storage.createBucket('message-attachments', {
+        public: true,
+        fileSizeLimit: 20971520, // 20MB
+      });
+      console.log('Created message-attachments bucket');
+    }
+  } catch (error) {
+    console.error('Error checking/creating storage bucket:', error);
+  }
+})();

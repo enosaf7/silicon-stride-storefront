@@ -44,24 +44,32 @@ const UserMessages = () => {
   // Get admin user ID for messaging
   useEffect(() => {
     const fetchAdminId = async () => {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'admin')
-        .limit(1);
+      try {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'admin')
+          .limit(1);
+          
+        if (error) {
+          console.error('Error fetching admin:', error);
+          return;
+        }
         
-      if (error) {
-        console.error('Error fetching admin:', error);
-        return;
-      }
-      
-      if (data && data.length > 0) {
-        setAdminId(data[0].user_id);
+        if (data && data.length > 0) {
+          setAdminId(data[0].user_id);
+        } else {
+          console.error('No admin user found');
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin ID:', err);
       }
     };
     
-    fetchAdminId();
-  }, []);
+    if (user) {
+      fetchAdminId();
+    }
+  }, [user]);
 
   // Fetch messages using RPC to avoid type issues
   const { data: messagesData, refetch: refetchMessages } = useQuery({
@@ -69,15 +77,39 @@ const UserMessages = () => {
     queryFn: async () => {
       if (!user) return [] as Message[];
 
-      const { data, error } = await supabase
-        .rpc('get_user_messages', { user_id: user.id });
+      try {
+        const { data, error } = await supabase
+          .rpc('get_user_messages', { user_id: user.id });
 
-      if (error) {
+        if (error) {
+          console.error('Failed to load messages:', error);
+          toast.error("Failed to load messages");
+          return [] as Message[];
+        }
+        
+        // For each message, check if it's a reply and fetch the original message content
+        const enhancedMessages = await Promise.all((data || []).map(async (msg: any) => {
+          if (msg.reply_to) {
+            const { data: replyData } = await supabase
+              .from('messages')
+              .select('content')
+              .eq('id', msg.reply_to)
+              .single();
+              
+            return {
+              ...msg,
+              reply_content: replyData?.content || 'Original message not found'
+            };
+          }
+          return msg;
+        }));
+        
+        return enhancedMessages as Message[];
+      } catch (err) {
+        console.error('Error in message fetching:', err);
         toast.error("Failed to load messages");
-        throw error;
+        return [] as Message[];
       }
-      
-      return data as Message[];
     },
     enabled: !!user,
     refetchInterval: open ? 5000 : 30000, // Refresh every 5s when open, otherwise every 30s
@@ -110,9 +142,16 @@ const UserMessages = () => {
             user_id: user.id,
             message_ids: unreadMessages.map(msg => msg.id)
           })
-          .then(() => {
+          .then(({ error }) => {
+            if (error) {
+              console.error('Error marking messages as read:', error);
+              return;
+            }
             setUnreadCount(0);
             refetchMessages();
+          })
+          .catch(err => {
+            console.error('Failed to mark messages as read:', err);
           });
       }
     }
