@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -136,15 +135,12 @@ const UserMessages = () => {
       );
       
       if (unreadMessages.length > 0) {
-        // Use a custom RPC function to mark messages as read
-        const promise = supabase
+        // Use the rpc function but handle the promise differently
+        supabase
           .rpc('mark_messages_as_read', {
             user_id: user.id,
             message_ids: unreadMessages.map(msg => msg.id)
           })
-          
-        // Handle the promise correctly
-        promise
           .then(({ error }) => {
             if (error) {
               console.error('Error marking messages as read:', error);
@@ -153,7 +149,9 @@ const UserMessages = () => {
             setUnreadCount(0);
             refetchMessages();
           })
-          .catch(error => { 
+          .then(undefined, (error) => { 
+            // Using .then(undefined, errorHandler) instead of .catch()
+            // This is compatible with PromiseLike<void>
             console.error('Failed to mark messages as read:', error);
           });
       }
