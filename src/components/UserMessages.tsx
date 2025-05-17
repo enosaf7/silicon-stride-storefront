@@ -137,11 +137,14 @@ const UserMessages = () => {
       
       if (unreadMessages.length > 0) {
         // Use a custom RPC function to mark messages as read
-        supabase
+        const promise = supabase
           .rpc('mark_messages_as_read', {
             user_id: user.id,
             message_ids: unreadMessages.map(msg => msg.id)
           })
+          
+        // Handle the promise correctly
+        promise
           .then(({ error }) => {
             if (error) {
               console.error('Error marking messages as read:', error);
@@ -150,8 +153,8 @@ const UserMessages = () => {
             setUnreadCount(0);
             refetchMessages();
           })
-          .catch(err => { // This line is fixed now - proper error handling for the Promise
-            console.error('Failed to mark messages as read:', err);
+          .catch(error => { 
+            console.error('Failed to mark messages as read:', error);
           });
       }
     }

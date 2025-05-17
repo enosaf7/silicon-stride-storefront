@@ -34,17 +34,24 @@ supabase.rpc = (fn: string, ...args: any[]) => {
 // Create the message-attachments bucket if it doesn't exist (on app init)
 (async () => {
   try {
-    const { error: bucketError } = await supabase.storage.getBucket('message-attachments');
-    if (bucketError && bucketError.message.includes('not found')) {
-      try {
-        await supabase.storage.createBucket('message-attachments', {
-          public: true,
-          fileSizeLimit: 20971520, // 20MB
-        });
-        console.log('Created message-attachments bucket');
-      } catch (createError) {
-        console.error('Error creating storage bucket:', createError);
+    // First check if the bucket exists
+    try {
+      const { error: bucketError } = await supabase.storage.getBucket('message-attachments');
+      
+      // If the bucket doesn't exist, create it
+      if (bucketError && bucketError.message.includes('not found')) {
+        try {
+          await supabase.storage.createBucket('message-attachments', {
+            public: true,
+            fileSizeLimit: 20971520, // 20MB
+          });
+          console.log('Created message-attachments bucket');
+        } catch (createError) {
+          console.error('Error creating storage bucket:', createError);
+        }
       }
+    } catch (error) {
+      console.error('Error checking bucket:', error);
     }
   } catch (error) {
     console.error('Error checking/creating storage bucket:', error);
