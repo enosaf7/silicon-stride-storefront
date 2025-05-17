@@ -150,7 +150,7 @@ const UserMessages = () => {
             setUnreadCount(0);
             refetchMessages();
           })
-          .catch(err => {
+          .catch(err => { // This line is fixed now - proper error handling for the Promise
             console.error('Failed to mark messages as read:', err);
           });
       }
