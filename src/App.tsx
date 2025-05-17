@@ -24,7 +24,7 @@ import ProductManagement from "./pages/Admin/ProductManagement";
 import OrderManagement from "./pages/Admin/OrderManagement";
 import UserManagement from "./pages/Admin/UserManagement";
 import ReviewManagement from "./pages/Admin/ReviewManagement";
-import UserMessaging from "./pages/Admin/UserMessaging";
+import AdminChat from "./pages/Admin/AdminChat";
 
 const queryClient = new QueryClient();
 
@@ -77,9 +77,9 @@ const App = () => (
                   <ReviewManagement />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/messages" element={
+              <Route path="/admin/chat" element={
                 <ProtectedRoute adminOnly>
-                  <UserMessaging />
+                  <AdminChat />
                 </ProtectedRoute>
               } />
               
