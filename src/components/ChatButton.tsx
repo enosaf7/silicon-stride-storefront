@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import ChatDialog from '@/components/ChatDialog';
 
+const ADMIN_ID = 'admin';
+
 const ChatButton = () => {
   const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -13,18 +15,16 @@ const ChatButton = () => {
   useEffect(() => {
     if (!user) return;
 
-    // Fetch unread user->admin messages
+    // Fetch unread count
     const fetchUnreadCount = async () => {
       const { data, error } = await supabase
         .from('messages')
         .select('id')
         .eq('receiver_id', user.id)
-        .eq('is_read', false)
-        .eq('sender_id', 'admin'); // assuming 'admin' is the admin's user id
+        .eq('sender_id', ADMIN_ID)
+        .eq('is_read', false);
 
-      if (!error && data) {
-        setUnreadCount(data.length);
-      }
+      if (!error && data) setUnreadCount(data.length);
     };
 
     fetchUnreadCount();
@@ -38,11 +38,11 @@ const ChatButton = () => {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `receiver_id=eq.${user.id},sender_id=eq.admin`
+          filter: `receiver_id=eq.${user.id},sender_id=eq.${ADMIN_ID}`,
         },
         (payload) => {
           if (payload.new && !payload.new.is_read) {
-            setUnreadCount(prev => prev + 1);
+            setUnreadCount((prev) => prev + 1);
           }
         }
       )
@@ -52,11 +52,16 @@ const ChatButton = () => {
           event: 'UPDATE',
           schema: 'public',
           table: 'messages',
-          filter: `receiver_id=eq.${user.id},sender_id=eq.admin`
+          filter: `receiver_id=eq.${user.id},sender_id=eq.${ADMIN_ID}`,
         },
         (payload) => {
-          if (payload.old && !payload.old.is_read && payload.new && payload.new.is_read) {
-            setUnreadCount(prev => Math.max(0, prev - 1));
+          if (
+            payload.old &&
+            !payload.old.is_read &&
+            payload.new &&
+            payload.new.is_read
+          ) {
+            setUnreadCount((prev) => Math.max(0, prev - 1));
           }
         }
       )
@@ -77,9 +82,9 @@ const ChatButton = () => {
 
   return (
     <>
-      <Button 
-        variant="ghost" 
-        size="icon" 
+      <Button
+        variant="ghost"
+        size="icon"
         className="relative"
         onClick={() => setOpen(true)}
         aria-label="Chat with Admin"
@@ -91,7 +96,6 @@ const ChatButton = () => {
           </span>
         )}
       </Button>
-
       <ChatDialog open={open} onOpenChange={setOpen} />
     </>
   );
