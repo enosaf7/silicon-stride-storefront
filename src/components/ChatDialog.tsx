@@ -17,19 +17,20 @@ const ChatDialog = ({ open, onOpenChange }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Fetch chat history
   const fetchMessages = async () => {
     if (!user) return;
     setIsLoading(true);
     const { data, error } = await supabase
       .from('messages')
       .select('*')
-      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${ADMIN_ID}),and(sender_id.eq.${ADMIN_ID},receiver_id.eq.${user.id})`)
+      .or(
+        `and(sender_id.eq.${user.id},receiver_id.eq.${ADMIN_ID}),and(sender_id.eq.${ADMIN_ID},receiver_id.eq.${user.id})`
+      )
       .order('created_at', { ascending: true });
     setIsLoading(false);
     if (!error && data) {
       setMessages(data);
-      // Mark received as read
+      // Mark all received as read
       const unread = data.filter(
         (msg) => msg.receiver_id === user.id && !msg.is_read
       );
@@ -52,13 +53,13 @@ const ChatDialog = ({ open, onOpenChange }) => {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `sender_id=eq.${ADMIN_ID},receiver_id=eq.${user.id}`
+        filter: `sender_id=eq.${ADMIN_ID},receiver_id=eq.${user.id}`,
       }, fetchMessages)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `sender_id=eq.${user.id},receiver_id=eq.${ADMIN_ID}`
+        filter: `sender_id=eq.${user.id},receiver_id=eq.${ADMIN_ID}`,
       }, fetchMessages)
       .subscribe();
     return () => {
@@ -76,11 +77,10 @@ const ChatDialog = ({ open, onOpenChange }) => {
   const uploadMedia = async (file) => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('chat-media')
       .upload(fileName, file);
     if (error) throw error;
-    // Get public URL
     const { data: urlData } = await supabase.storage
       .from('chat-media')
       .getPublicUrl(fileName);
