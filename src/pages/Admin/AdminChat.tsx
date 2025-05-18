@@ -123,7 +123,7 @@ const AdminChat = () => {
   const uploadMedia = async (file) => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${ADMIN_ID}_${Date.now()}.${fileExt}`;
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('chat-media')
       .upload(fileName, file);
     if (error) throw error;
