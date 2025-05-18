@@ -3,7 +3,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader } from 'lucide-react';
+import { Loader, Paperclip } from 'lucide-react';
 
 const ADMIN_ID = 'admin';
 
@@ -13,6 +13,7 @@ const AdminChat = () => {
   const [messages, setMessages] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
+  const [mediaFile, setMediaFile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
@@ -20,7 +21,6 @@ const AdminChat = () => {
   // Fetch users who have chatted with admin
   const fetchUsers = async () => {
     setIsLoading(true);
-    // Find all users who have had a conversation with admin
     const { data: msgData } = await supabase
       .from('messages')
       .select('sender_id,receiver_id')
@@ -30,7 +30,6 @@ const AdminChat = () => {
       setIsLoading(false);
       return;
     }
-    // Get unique user IDs who are not admin
     const userIds = [
       ...new Set(
         msgData
@@ -45,7 +44,6 @@ const AdminChat = () => {
       setIsLoading(false);
       return;
     }
-    // Fetch user details
     const { data: userRows } = await supabase
       .from('users')
       .select('*')
@@ -58,7 +56,7 @@ const AdminChat = () => {
   const fetchMessages = async (userId) => {
     if (!userId) return;
     setIsLoading(true);
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('messages')
       .select('*')
       .or(`and(sender_id.eq.${ADMIN_ID},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${ADMIN_ID})`)
@@ -77,7 +75,6 @@ const AdminChat = () => {
     }
   };
 
-  // Handle real-time updates
   useEffect(() => {
     fetchUsers();
     const channel = supabase
@@ -92,7 +89,6 @@ const AdminChat = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -116,7 +112,6 @@ const AdminChat = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line
   }, [selectedUser]);
 
   useEffect(() => {
@@ -125,22 +120,47 @@ const AdminChat = () => {
     }
   }, [messages]);
 
-  // Send message to user
+  const uploadMedia = async (file) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${ADMIN_ID}_${Date.now()}.${fileExt}`;
+    const { data, error } = await supabase.storage
+      .from('chat-media')
+      .upload(fileName, file);
+    if (error) throw error;
+    const { data: urlData } = await supabase.storage
+      .from('chat-media')
+      .getPublicUrl(fileName);
+    return urlData.publicUrl;
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedUser) return;
+    if ((!newMessage.trim() && !mediaFile) || !selectedUser) return;
     setIsSending(true);
+
+    let mediaUrl = null;
+    if (mediaFile) {
+      try {
+        mediaUrl = await uploadMedia(mediaFile);
+      } catch (err) {
+        alert('Failed to upload media.');
+        setIsSending(false);
+        return;
+      }
+    }
+
     await supabase.from('messages').insert({
       sender_id: ADMIN_ID,
       receiver_id: selectedUser.id,
       content: newMessage.trim(),
       is_read: false,
+      media_url: mediaUrl,
     });
     setNewMessage('');
+    setMediaFile(null);
     setIsSending(false);
   };
 
-  // Filter users by search query
   const filteredUsers = users.filter((user) => {
     const fullName = `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase();
     return fullName.includes(searchQuery.toLowerCase());
@@ -193,13 +213,11 @@ const AdminChat = () => {
           <div className="bg-white rounded-lg shadow-sm overflow-hidden md:col-span-2 flex flex-col">
             {selectedUser ? (
               <>
-                {/* Header */}
                 <div className="p-4 border-b border-gray-200">
                   <h2 className="font-semibold">
                     {selectedUser.first_name} {selectedUser.last_name}
                   </h2>
                 </div>
-                {/* Messages */}
                 <div className="flex-grow p-4 overflow-y-auto h-[calc(100vh-400px)] flex flex-col">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-full">
@@ -216,6 +234,17 @@ const AdminChat = () => {
                           className={`mb-2 flex ${message.sender_id === ADMIN_ID ? 'justify-end' : 'justify-start'}`}
                         >
                           <div className={`rounded-lg px-3 py-2 ${message.sender_id === ADMIN_ID ? 'bg-brand-orange text-white' : 'bg-gray-200 text-gray-900'}`}>
+                            {message.media_url && (
+                              <div className="mb-1">
+                                {message.media_url.match(/\.(jpeg|jpg|png|gif)$/i) ? (
+                                  <img src={message.media_url} alt="media" className="max-w-xs max-h-44 rounded mb-1" />
+                                ) : message.media_url.match(/\.(mp4|webm|ogg)$/i) ? (
+                                  <video controls src={message.media_url} className="max-w-xs max-h-44 rounded mb-1" />
+                                ) : (
+                                  <a href={message.media_url} target="_blank" rel="noopener noreferrer" className="underline">View file</a>
+                                )}
+                              </div>
+                            )}
                             <div className="text-sm">{message.content}</div>
                             <div className="text-xs text-right text-gray-600 mt-1">
                               {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -227,18 +256,29 @@ const AdminChat = () => {
                     </>
                   )}
                 </div>
-                {/* Send Message */}
-                <form onSubmit={handleSend} className="flex gap-2 p-4 border-t border-gray-200">
+                <form onSubmit={handleSend} className="flex gap-2 items-center p-4 border-t border-gray-200">
                   <Input
                     placeholder="Type your message..."
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     disabled={isSending}
+                    style={{ flex: 1 }}
                   />
-                  <Button type="submit" disabled={isSending || !newMessage.trim()}>
+                  <label className="cursor-pointer">
+                    <Paperclip />
+                    <input type="file" accept="image/*,video/*" className="hidden" onChange={e => setMediaFile(e.target.files[0])} />
+                  </label>
+                  <Button type="submit" disabled={isSending || (!newMessage.trim() && !mediaFile)}>
                     Send
                   </Button>
                 </form>
+                {mediaFile && (
+                  <div className="text-xs mt-1 text-gray-700 flex items-center gap-1 px-4 pb-2">
+                    <span>Selected:</span>
+                    <span className="font-semibold">{mediaFile.name}</span>
+                    <button type="button" onClick={() => setMediaFile(null)} className="text-red-500 ml-2">Remove</button>
+                  </div>
+                )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-gray-400">
