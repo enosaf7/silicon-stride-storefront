@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,17 +11,17 @@ const ChatButton = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
 
+  // Count unread messages for the current user
   useEffect(() => {
     if (!user) return;
 
-    // Fetch unread user->admin messages
+    // Initial fetch of unread count
     const fetchUnreadCount = async () => {
       const { data, error } = await supabase
         .from('messages')
         .select('id')
         .eq('receiver_id', user.id)
-        .eq('is_read', false)
-        .eq('sender_id', 'admin'); // assuming 'admin' is the admin's user id
+        .eq('is_read', false);
 
       if (!error && data) {
         setUnreadCount(data.length);
@@ -38,9 +39,10 @@ const ChatButton = () => {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `receiver_id=eq.${user.id},sender_id=eq.admin`
+          filter: `receiver_id=eq.${user.id}`
         },
         (payload) => {
+          // If a new message comes in and is unread, increment the count
           if (payload.new && !payload.new.is_read) {
             setUnreadCount(prev => prev + 1);
           }
@@ -52,9 +54,10 @@ const ChatButton = () => {
           event: 'UPDATE',
           schema: 'public',
           table: 'messages',
-          filter: `receiver_id=eq.${user.id},sender_id=eq.admin`
+          filter: `receiver_id=eq.${user.id}`
         },
         (payload) => {
+          // If a message is marked as read, decrement the count
           if (payload.old && !payload.old.is_read && payload.new && payload.new.is_read) {
             setUnreadCount(prev => Math.max(0, prev - 1));
           }
@@ -67,6 +70,7 @@ const ChatButton = () => {
     };
   }, [user]);
 
+  // Reset unread count when opening the chat
   useEffect(() => {
     if (open && unreadCount > 0) {
       setUnreadCount(0);
@@ -82,7 +86,7 @@ const ChatButton = () => {
         size="icon" 
         className="relative"
         onClick={() => setOpen(true)}
-        aria-label="Chat with Admin"
+        aria-label="Chat with Support"
       >
         <MessageSquare className="h-5 w-5" />
         {unreadCount > 0 && (
