@@ -1,96 +1,23 @@
+// BEFORE: You might have had something like this:
+// import AdminChat from './pages/Admin/AdminChat';
+// <Route path="/admin/chat" element={<AdminChat />} />
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Products from "./pages/Products";
-import Categories from "./pages/Categories";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import ProductDetail from "./pages/ProductDetail";
-import Cart from "./pages/Cart";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./contexts/AuthContext";
-import { CartProvider } from "./contexts/CartContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-
-// Admin Pages
-import AdminDashboard from "./pages/Admin/AdminDashboard";
-import ProductManagement from "./pages/Admin/ProductManagement";
-import OrderManagement from "./pages/Admin/OrderManagement";
-import UserManagement from "./pages/Admin/UserManagement";
-import ReviewManagement from "./pages/Admin/ReviewManagement";
-import AdminChat from "./pages/Admin/AdminChat";
-
-const queryClient = new QueryClient();
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// import AdminChat from './pages/Admin/AdminChat'; // REMOVE THIS
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+// import other pages as needed
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <CartProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/cart" element={
-                <ProtectedRoute>
-                  <Cart />
-                </ProtectedRoute>
-              } />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              
-              {/* Admin Routes */}
-              <Route path="/admin" element={
-                <ProtectedRoute adminOnly>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/products" element={
-                <ProtectedRoute adminOnly>
-                  <ProductManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/orders" element={
-                <ProtectedRoute adminOnly>
-                  <OrderManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/users" element={
-                <ProtectedRoute adminOnly>
-                  <UserManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/reviews" element={
-                <ProtectedRoute adminOnly>
-                  <ReviewManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/chat" element={
-                <ProtectedRoute adminOnly>
-                  <AdminChat />
-                </ProtectedRoute>
-              } />
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </CartProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <Router>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/profile" element={<Profile />} />
+      {/* <Route path="/admin/chat" element={<AdminChat />} /> REMOVE THIS */}
+      {/* Add other routes as needed */}
+    </Routes>
+  </Router>
 );
 
 export default App;
