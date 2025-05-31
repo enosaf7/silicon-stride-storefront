@@ -151,7 +151,7 @@ const Contact: React.FC = () => {
                     <Mail className="h-5 w-5 text-brand-orange mt-1" />
                     <div>
                       <h3 className="font-medium">Email</h3>
-                      <p className="text-gray-600">support@siliconshoes.com</p>
+                      <p className="text-gray-600">saffiretech01@gmail.com</p>
                     </div>
                   </div>
                   
@@ -159,7 +159,7 @@ const Contact: React.FC = () => {
                     <Phone className="h-5 w-5 text-brand-orange mt-1" />
                     <div>
                       <h3 className="font-medium">Phone</h3>
-                      <p className="text-gray-600">+1 (555) 123-4567</p>
+                      <p className="text-gray-600">+233 (55) 782 6125/ +233 (24) 587 6656</p>
                     </div>
                   </div>
                   
@@ -168,9 +168,8 @@ const Contact: React.FC = () => {
                     <div>
                       <h3 className="font-medium">Address</h3>
                       <p className="text-gray-600">
-                        123 Silicon Street<br />
-                        Footwear District<br />
-                        San Francisco, CA 94103
+                        Accra UTC<br />
+                        Makola Market<br />
                       </p>
                     </div>
                   </div>
@@ -180,9 +179,8 @@ const Contact: React.FC = () => {
                     <div>
                       <h3 className="font-medium">Business Hours</h3>
                       <p className="text-gray-600">
-                        Monday-Friday: 9am to 5pm<br />
-                        Saturday: 10am to 4pm<br />
-                        Sunday: Closed
+                        Monday-Friday: 9am to 6pm<br />
+                        
                       </p>
                     </div>
                   </div>
