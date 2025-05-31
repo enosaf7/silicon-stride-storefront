@@ -34,7 +34,7 @@ const HeroSection: React.FC = () => {
           <div className="md:w-1/2 relative">
             <div className="bg-brand-orange rounded-full w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 absolute -z-10 top-4 right-4"></div>
             <img 
-              src= "https://imgur.com/ZXmVZUI" 
+              src= "https://imgur.com/ZXmVZUI.jpg" 
               alt="JE's Palace logo" 
               className="w-full h-auto rounded-lg shadow-lg"
             />
