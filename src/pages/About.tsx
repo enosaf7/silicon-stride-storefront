@@ -67,13 +67,16 @@ const About: React.FC = () => {
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {[1, 2, 3].map((team) => (
-                <div key={team} className="text-center">
-                  <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4"></div>
-                  <h3 className="font-semibold">Team Member {team}</h3>
-                  <p className="text-gray-500 text-sm">Position</p>
-                </div>
-              ))}
+              <div className="text-center">
+                <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                <h3 className="font-semibold">Joel</h3>
+                <p className="text-gray-500 text-sm">Co-Founder & Creative Lead</p>
+              </div>
+              <div className="text-center">
+                <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                <h3 className="font-semibold">Emmanuel</h3>
+                <p className="text-gray-500 text-sm">Co-Founder & Strategy Lead</p>
+              </div>
             </div>
           </section>
           
