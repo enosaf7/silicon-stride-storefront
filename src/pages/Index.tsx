@@ -34,7 +34,7 @@ const Index: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Superior Comfort</h3>
                 <p className="text-gray-600">
-                  Our patented silicon technology provides unmatched cushioning and support for all-day comfort.
+                  Our patented shoes provides unmatched cushioning and support for all-day comfort.
                 </p>
               </div>
               
@@ -98,7 +98,7 @@ const Index: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 mb-4">
-                  "These are the most comfortable shoes I've ever worn. The silicon cushioning makes a huge difference during my long work days. Highly recommend!"
+                  "These are the most comfortable shoes I've ever worn. The cushioning makes a huge difference during my long work days. Highly recommend!"
                 </p>
                 <div className="font-medium">Osafo Enoch.</div>
               </div>
@@ -115,7 +115,7 @@ const Index: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 mb-4">
-                  "I've tried many brands of running shoes, but Jhoey-Silicon has been a game-changer. The support and cushioning are exceptional, and they look great too!"
+                  "I've tried many brands of sandals, but JE's Palace has been a game-changer. The support and cushioning are exceptional, and they look great too!"
                 </p>
                 <div className="font-medium">Michael Ohene.</div>
               </div>
@@ -143,7 +143,7 @@ const Index: React.FC = () => {
           </div>
         </section>
         
-        <NewsletterSignup />
+        
       </main>
       <Footer />
     </>
