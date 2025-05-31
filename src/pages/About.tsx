@@ -15,14 +15,15 @@ const About: React.FC = () => {
           <section className="bg-white p-8 rounded-lg shadow-sm mb-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">About Silicon</h1>
             <p className="text-gray-600 mb-6">
-              Founded in 2020, Silicon is a premium footwear brand committed to combining comfort, 
+              Founded in 2024, JE is a premium footwear brand committed to combining comfort, 
               style, and sustainability.
             </p>
             
             <div className="bg-gray-100 rounded-lg p-6 mb-8">
               <h2 className="text-xl font-semibold mb-3">Our Mission</h2>
               <p className="text-gray-700">
-                To create innovative, high-quality footwear that minimizes environmental impact 
+                To redefine luxury through meticulously crafted men’s footwear that blends elegance, comfort, and cultural pride
+                — empowering every gentleman to walk with distinction and live with purpose 
                 while maximizing comfort and style for our customers.
               </p>
             </div>
@@ -41,9 +42,10 @@ const About: React.FC = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-3">Our Commitment</h2>
                 <p className="text-gray-600">
-                  We are committed to reducing our carbon footprint by using recycled and sustainable 
-                  materials in our products. By 2025, we aim to have all our products made from at 
-                  least 70% sustainable materials.
+                  At JE’s Palace, we are committed to delivering unmatched quality, timeless style, 
+                  and exceptional customer experience. We pledge to uphold the highest standards in 
+                  craftsmanship and service, ensuring every pair of footwear reflects our dedication 
+                  to luxury, comfort, and the refined tastes of the modern man.
                 </p>
               </div>
             </div>
@@ -52,8 +54,16 @@ const About: React.FC = () => {
           <section className="bg-white p-8 rounded-lg shadow-sm mb-12">
             <h2 className="text-2xl font-bold mb-4">Our Team</h2>
             <p className="text-gray-600 mb-6">
-              Silicon is powered by a diverse team of passionate individuals dedicated to 
-              revolutionizing the footwear industry.
+              At the heart of JE’s Palace is a dynamic duo with a shared vision for 
+              excellence in men’s fashion. Founded by Joel and Emmanuel, JE’s Palace 
+              represents more than just their initials — it symbolizes a strong partnership 
+              built on creativity, trust, and a passion for redefining African luxury.
+              Together, they blend innovation with tradition, bringing unique perspectives 
+              to every design. Joel, with an eye for timeless elegance, ensures each product 
+              reflects premium quality and style. Emmanuel, driven by strategic vision and customer 
+              experience, brings the brand’s lifestyle ethos to life in every detail.
+              Their combined talents are the soul of JE’s Palace — a brand where every 
+              step you take is backed by dedication, distinction, and purpose.
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -70,7 +80,7 @@ const About: React.FC = () => {
           <Separator className="my-8" />
           
           <div className="text-center">
-            <h2 className="text-2xl font-semibold mb-4">Ready to experience Silicon?</h2>
+            <h2 className="text-2xl font-semibold mb-4">Ready to experience JEs Palace?</h2>
             <p className="text-gray-600 mb-6">Browse our collection and find your perfect pair.</p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button asChild className="bg-brand-orange hover:bg-brand-orange/90">
