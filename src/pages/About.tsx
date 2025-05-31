@@ -73,7 +73,7 @@ const About: React.FC = () => {
                 <p className="text-gray-500 text-sm">Co-Founder & Creative Lead</p>
               </div>
               <div className="text-center">
-                <img src ="https://imgur.com/zLYvxig.jpg" alt = "Emmanuel" classname="w-32 h-32 object-cover rounded-full mx-auto mb-4 shadow"/>
+                <img src ="https://imgur.com/zLYvxig.jpg" alt ="Emmanuel" className="w-32 h-32 object-cover rounded-full mx-auto mb-4 shadow"/>
                 <h3 className="font-semibold">Emmanuel</h3>
                 <p className="text-gray-500 text-sm">Co-Founder & Strategy Lead</p>
               </div>
