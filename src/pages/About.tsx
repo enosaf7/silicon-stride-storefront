@@ -13,7 +13,7 @@ const About: React.FC = () => {
       <main className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto">
           <section className="bg-white p-8 rounded-lg shadow-sm mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">About Silicon</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">About JE's Palace</h1>
             <p className="text-gray-600 mb-6">
               Founded in 2024, JE is a premium footwear brand committed to combining comfort, 
               style, and sustainability.
@@ -80,7 +80,7 @@ const About: React.FC = () => {
           <Separator className="my-8" />
           
           <div className="text-center">
-            <h2 className="text-2xl font-semibold mb-4">Ready to experience JEs Palace?</h2>
+            <h2 className="text-2xl font-semibold mb-4">Ready to experience JE's Palace?</h2>
             <p className="text-gray-600 mb-6">Browse our collection and find your perfect pair.</p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button asChild className="bg-brand-orange hover:bg-brand-orange/90">
