@@ -23,7 +23,7 @@ const Categories: React.FC = () => {
       id: 'slippers',
       name: 'Slippers',
       description: 'Cozy slippers for relaxation at home',
-      image: '/placeholder.svg'
+      image: "https://imgur.com/uZqC77N.jpg"
     },
     {
       id: 'boots',
