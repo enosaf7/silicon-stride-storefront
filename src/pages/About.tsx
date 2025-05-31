@@ -68,7 +68,7 @@ const About: React.FC = () => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               <div className="text-center">
-                <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                <img src="https://imgur.com/n24hVbg.jpg" alt="Joel" className="w-32 h-32 object-cover rounded-full mx-auto mb-4 shadow"/>
                 <h3 className="font-semibold">Joel</h3>
                 <p className="text-gray-500 text-sm">Co-Founder & Creative Lead</p>
               </div>
