@@ -1,74 +1,66 @@
-# Welcome to your Lovable project
+JE’s Palace – Footwear Storefront for Accra, Ghana
+Welcome to the source code for JE’s Palace, a modern e-commerce website for a local footwear shop based in Accra, Ghana. This project provides a user-friendly, mobile-first storefront for showcasing, browsing, and purchasing shoes and footwear.
 
-## Project info
+Table of Contents
+About JE’s Palace
+Features
+Tech Stack
+Getting Started
+Scripts
+Deployment
+Contributing
+License
+About JE’s Palace
+JE’s Palace is dedicated to providing quality footwear to the people of Accra and beyond. This website allows customers to:
 
+Browse a curated catalog of shoes and accessories
+Search and filter products
+Add items to a shopping cart and checkout
+Learn about store promotions and new arrivals
+Contact the shop for inquiries
+Features
+✨ Modern UI: Built with React, shadcn/ui, and Tailwind CSS for a clean shopping experience.
+📦 Product Catalog: Easy browsing of all available footwear.
+🛒 Shopping Cart: Add, update, and remove products from your cart.
+🔍 Search & Filter: Quickly find products by type, size, or brand.
+📱 Responsive Design: Works great on mobile, tablet, and desktop.
+🌐 Fast & Reliable: Powered by Vite for rapid loading and smooth navigation.
+🛠️ Easy Customization: Modular codebase for simple updates and feature additions.
+Tech Stack
+Frontend: React, TypeScript, Vite
+Styling: Tailwind CSS, shadcn/ui
+State Management: React Context API (and custom hooks)
+Backend/Database: (If using Supabase or similar, add details here)
+Build Tools: Vite, ESLint, PostCSS
+Getting Started
+To run the project locally, you’ll need Node.js & npm installed.
 
-**URL**: https://lovable.dev/projects/3d4fe89f-5765-46bb-9e83-872d250fc707
+sh
+# 1. Clone the repository
+git clone https://github.com/enosaf7/silicon-stride-storefront.git
+cd silicon-stride-storefront
 
-## How can I edit this code?
+# 2. Install dependencies
+npm install
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project] and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Start the development server
 npm run dev
-```
+The app will be available at http://localhost:5173/ by default.
 
-**Edit a file directly in GitHub**
+Scripts
+npm run dev – Start the development server
+npm run build – Build the project for production
+npm run lint – Run lint checks
+Deployment
+You can deploy JE’s Palace using your preferred hosting (Vercel, Netlify, etc.), or follow the platform-specific instructions if using a builder like Lovable.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Contributing
+Contributions are welcome! Please open issues or submit pull requests to help improve the storefront.
 
-**Use GitHub Codespaces**
+License
+This project is for educational and commercial use by JE’s Palace. See LICENSE for more details.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Explore the code:
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable] and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Repository root files
+Source code (src/)
