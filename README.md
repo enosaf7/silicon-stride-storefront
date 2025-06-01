@@ -1,7 +1,7 @@
-JE’s Palace – Footwear Storefront for Accra, Ghana
+#JE’s Palace – Footwear Storefront for Accra, Ghana
 Welcome to the source code for JE’s Palace, a modern e-commerce website for a local footwear shop based in Accra, Ghana. This project provides a user-friendly, mobile-first storefront for showcasing, browsing, and purchasing shoes and footwear.
 
-Table of Contents
+#Table of Contents
 About JE’s Palace
 Features
 Tech Stack
@@ -10,7 +10,7 @@ Scripts
 Deployment
 Contributing
 License
-About JE’s Palace
+#About JE’s Palace
 JE’s Palace is dedicated to providing quality footwear to the people of Accra and beyond. This website allows customers to:
 
 Browse a curated catalog of shoes and accessories
@@ -18,7 +18,7 @@ Search and filter products
 Add items to a shopping cart and checkout
 Learn about store promotions and new arrivals
 Contact the shop for inquiries
-Features
+#Features
 ✨ Modern UI: Built with React, shadcn/ui, and Tailwind CSS for a clean shopping experience.
 📦 Product Catalog: Easy browsing of all available footwear.
 🛒 Shopping Cart: Add, update, and remove products from your cart.
@@ -26,7 +26,7 @@ Features
 📱 Responsive Design: Works great on mobile, tablet, and desktop.
 🌐 Fast & Reliable: Powered by Vite for rapid loading and smooth navigation.
 🛠️ Easy Customization: Modular codebase for simple updates and feature additions.
-Tech Stack
+#Tech Stack
 Frontend: React, TypeScript, Vite
 Styling: Tailwind CSS, shadcn/ui
 State Management: React Context API (and custom hooks)
@@ -47,20 +47,20 @@ npm install
 npm run dev
 The app will be available at http://localhost:5173/ by default.
 
-Scripts
+#Scripts
 npm run dev – Start the development server
 npm run build – Build the project for production
 npm run lint – Run lint checks
-Deployment
+#Deployment
 You can deploy JE’s Palace using your preferred hosting (Vercel, Netlify, etc.), or follow the platform-specific instructions if using a builder like Lovable.
 
-Contributing
+#Contributing
 Contributions are welcome! Please open issues or submit pull requests to help improve the storefront.
 
-License
+#License
 This project is for educational and commercial use by JE’s Palace. See LICENSE for more details.
 
-Explore the code:
+#Explore the code:
 
 Repository root files
 Source code (src/)
