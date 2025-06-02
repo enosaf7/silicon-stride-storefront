@@ -24,7 +24,7 @@ const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) => {
     setIsSubmitting(true);
     
     try {
-      // Find admin user (we'll use the first user with admin role)
+      // Find admin user using user_roles table
       const { data: adminData, error: adminError } = await supabase
         .from('user_roles')
         .select('user_id')
@@ -34,29 +34,18 @@ const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) => {
 
       if (adminError || !adminData) {
         toast.error('Unable to find admin. Please try again later.');
+        console.error('Admin lookup error:', adminError);
         return;
       }
 
-      // Insert the message using a direct query to avoid TypeScript issues
+      // Insert the message directly into the messages table
       const { error } = await supabase
-        .rpc('exec_sql', {
-          query: `
-            INSERT INTO public.messages (sender_id, receiver_id, content, is_read)
-            VALUES ($1, $2, $3, $4)
-          `,
-          params: [user.id, adminData.user_id, message.trim(), false]
-        })
-        .catch(async () => {
-          // Fallback: use direct SQL insert
-          const { error: insertError } = await supabase
-            .from('messages' as any)
-            .insert({
-              sender_id: user.id,
-              receiver_id: adminData.user_id,
-              content: message.trim(),
-              is_read: false
-            });
-          return { error: insertError };
+        .from('messages')
+        .insert({
+          sender_id: user.id,
+          receiver_id: adminData.user_id,
+          content: message.trim(),
+          is_read: false
         });
         
       if (error) throw error;
