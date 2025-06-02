@@ -50,53 +50,6 @@ export type Database = {
           },
         ]
       }
-      messages: {
-        Row: {
-          attachment_type: string | null
-          attachment_url: string | null
-          content: string
-          created_at: string
-          id: string
-          is_read: boolean
-          receiver_id: string
-          reply_content: string | null
-          reply_to: string | null
-          sender_id: string
-        }
-        Insert: {
-          attachment_type?: string | null
-          attachment_url?: string | null
-          content: string
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          receiver_id: string
-          reply_content?: string | null
-          reply_to?: string | null
-          sender_id: string
-        }
-        Update: {
-          attachment_type?: string | null
-          attachment_url?: string | null
-          content?: string
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          receiver_id?: string
-          reply_content?: string | null
-          reply_to?: string | null
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_reply_to_fkey"
-            columns: ["reply_to"]
-            isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       order_items: {
         Row: {
           color: string | null
@@ -236,6 +189,7 @@ export type Database = {
         Row: {
           address: string | null
           created_at: string | null
+          email: string | null
           first_name: string | null
           id: string
           last_name: string | null
@@ -245,6 +199,7 @@ export type Database = {
         Insert: {
           address?: string | null
           created_at?: string | null
+          email?: string | null
           first_name?: string | null
           id: string
           last_name?: string | null
@@ -254,6 +209,7 @@ export type Database = {
         Update: {
           address?: string | null
           created_at?: string | null
+          email?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
