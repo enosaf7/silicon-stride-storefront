@@ -24,26 +24,33 @@ const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) => {
     setIsSubmitting(true);
     
     try {
-      // Find admin user using user_roles table
+      // Find admin users using user_roles table
       const { data: adminData, error: adminError } = await supabase
         .from('user_roles')
         .select('user_id')
         .eq('role', 'admin')
-        .limit(1)
-        .single();
+        .limit(1);
 
-      if (adminError || !adminData) {
-        toast.error('Unable to find admin. Please try again later.');
+      if (adminError) {
         console.error('Admin lookup error:', adminError);
+        toast.error('Unable to find admin. Please try again later.');
         return;
       }
+
+      if (!adminData || adminData.length === 0) {
+        toast.error('No admin users found. Please contact support.');
+        return;
+      }
+
+      // Use the first admin found
+      const adminUserId = adminData[0].user_id;
 
       // Insert the message directly into the messages table
       const { error } = await supabase
         .from('messages')
         .insert({
           sender_id: user.id,
-          receiver_id: adminData.user_id,
+          receiver_id: adminUserId,
           content: message.trim(),
           is_read: false
         });
