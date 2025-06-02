@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import SearchBar from '@/components/SearchBar';
 import ProfileMenu from '@/components/ProfileMenu';
-import ChatButton from '@/components/ChatButton';
 import { ShoppingCart } from 'lucide-react';
 
 const NavBar: React.FC = () => {
@@ -75,7 +74,6 @@ const NavBar: React.FC = () => {
                       <ShoppingCart className="h-5 w-5" />
                     </Button>
                   </Link>
-                  <ChatButton />
                   <ProfileMenu />
                 </>
               ) : (
