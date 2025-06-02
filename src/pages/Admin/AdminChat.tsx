@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader, MessageSquare, Users, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface UserProfile {
   id: string;
@@ -49,62 +48,73 @@ const AdminChat: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // Get all messages sent to this admin
-        const { data: messagesData, error: messagesError } = await supabase
-          .from('messages')
-          .select('sender_id, created_at')
-          .eq('receiver_id', user.id);
+        // Get all messages sent to this admin using RPC function
+        const { data: conversationsData, error: conversationsError } = await supabase
+          .rpc('get_admin_conversations', { admin_id: user.id });
           
-        if (messagesError) throw messagesError;
-        
-        if (!messagesData || messagesData.length === 0) {
-          setIsLoading(false);
-          return;
+        if (conversationsError) {
+          console.error('Error fetching conversations:', conversationsError);
+          // Fallback to direct query
+          const { data: messagesData, error: messagesError } = await supabase
+            .from('messages' as any)
+            .select('sender_id, created_at')
+            .eq('receiver_id', user.id);
+            
+          if (messagesError) throw messagesError;
+          
+          if (!messagesData || messagesData.length === 0) {
+            setIsLoading(false);
+            return;
+          }
+          
+          // Get unique sender IDs and count messages
+          const senderStats = messagesData.reduce((acc: any, msg: any) => {
+            if (!acc[msg.sender_id]) {
+              acc[msg.sender_id] = {
+                count: 0,
+                lastMessageAt: msg.created_at
+              };
+            }
+            acc[msg.sender_id].count++;
+            if (new Date(msg.created_at) > new Date(acc[msg.sender_id].lastMessageAt)) {
+              acc[msg.sender_id].lastMessageAt = msg.created_at;
+            }
+            return acc;
+          }, {});
+          
+          const senderIds = Object.keys(senderStats);
+          
+          if (senderIds.length === 0) {
+            setIsLoading(false);
+            return;
+          }
+          
+          // Get user profiles for these senders
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name')
+            .in('id', senderIds);
+            
+          if (profilesError) throw profilesError;
+          
+          // Combine profile data with message stats
+          const userProfilesWithStats = (profiles || []).map(profile => ({
+            ...profile,
+            message_count: senderStats[profile.id].count,
+            last_message_at: senderStats[profile.id].lastMessageAt
+          }));
+          
+          // Sort by last message time
+          userProfilesWithStats.sort((a, b) => 
+            new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
+          );
+          
+          setUserProfiles(userProfilesWithStats);
+        } else {
+          // Use RPC result
+          setUserProfiles(conversationsData || []);
         }
         
-        // Get unique sender IDs and count messages
-        const senderStats = messagesData.reduce((acc, msg) => {
-          if (!acc[msg.sender_id]) {
-            acc[msg.sender_id] = {
-              count: 0,
-              lastMessageAt: msg.created_at
-            };
-          }
-          acc[msg.sender_id].count++;
-          if (new Date(msg.created_at) > new Date(acc[msg.sender_id].lastMessageAt)) {
-            acc[msg.sender_id].lastMessageAt = msg.created_at;
-          }
-          return acc;
-        }, {} as Record<string, { count: number; lastMessageAt: string }>);
-        
-        const senderIds = Object.keys(senderStats);
-        
-        if (senderIds.length === 0) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // Get user profiles for these senders
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name')
-          .in('id', senderIds);
-          
-        if (profilesError) throw profilesError;
-        
-        // Combine profile data with message stats
-        const userProfilesWithStats = (profiles || []).map(profile => ({
-          ...profile,
-          message_count: senderStats[profile.id].count,
-          last_message_at: senderStats[profile.id].lastMessageAt
-        }));
-        
-        // Sort by last message time
-        userProfilesWithStats.sort((a, b) => 
-          new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
-        );
-        
-        setUserProfiles(userProfilesWithStats);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching user profiles:', error);
@@ -123,26 +133,35 @@ const AdminChat: React.FC = () => {
     setIsLoadingMessages(true);
     
     try {
+      // Try RPC function first
       const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(`and(sender_id.eq.${userId},receiver_id.eq.${user.id}),and(sender_id.eq.${user.id},receiver_id.eq.${userId})`)
-        .order('created_at', { ascending: true });
+        .rpc('get_conversation_messages', { user1: user.id, user2: userId });
         
-      if (error) throw error;
-      
-      setMessages(data || []);
+      if (error) {
+        // Fallback to direct query
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('messages' as any)
+          .select('*')
+          .or(`and(sender_id.eq.${userId},receiver_id.eq.${user.id}),and(sender_id.eq.${user.id},receiver_id.eq.${userId})`)
+          .order('created_at', { ascending: true });
+          
+        if (fallbackError) throw fallbackError;
+        setMessages(fallbackData || []);
+      } else {
+        setMessages(data || []);
+      }
       
       // Mark messages as read
       const unreadMessages = (data || [])
-        .filter(msg => msg.receiver_id === user.id && !msg.is_read)
-        .map(msg => msg.id);
+        .filter((msg: any) => msg.receiver_id === user.id && !msg.is_read)
+        .map((msg: any) => msg.id);
         
       if (unreadMessages.length > 0) {
         await supabase
-          .from('messages')
-          .update({ is_read: true })
-          .in('id', unreadMessages);
+          .rpc('mark_messages_as_read', {
+            user_id: user.id,
+            message_ids: unreadMessages
+          });
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
