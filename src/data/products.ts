@@ -6,7 +6,7 @@ export const products: Product[] = [
     id: '1',
     name: 'Executive Oxford Classic',
     category: 'shoes',
-    price: 199.99,
+    price: 500.00,
     images: [
       'https://i.imgur.com/3djGigI.jpeg',
       'https://imgur.com/t7EpmzM.jpeg'
@@ -22,7 +22,7 @@ export const products: Product[] = [
     id: '2',
     name: 'Italian Leather Derby',
     category: 'shoes',
-    price: 239.99,
+    price: 500.00,
     images: [
       'https://imgur.com/t7EpmzM.jpeg',
       'https://imgur.com/KANCdK5.jpeg'
@@ -38,7 +38,7 @@ export const products: Product[] = [
     id: '3',
     name: 'Zara Branded Sandals',
     category: 'sandals',
-    price: 259.99,
+    price: 500.00,
     images: [
       'https://imgur.com/8Y9d5CR,jpeg',
       'https://imgur.com/GUNiQp7.jpeg'
@@ -54,7 +54,7 @@ export const products: Product[] = [
     id: '4',
     name: 'Quality Slippers',
     category: 'slippers',
-    price: 189.99,
+    price: 300.00,
     images: [
       'https://imgur.com/MHAMWgR.jpeg',
       'https://imgur.com/GDdWm8u.jpeg'
@@ -69,9 +69,9 @@ export const products: Product[] = [
   },
   {
     id: '5',
-    name: 'Premium Monk Strap',
+    name: 'UK standard Full Shoe',
     category: 'shoes',
-    price: 219.99,
+    price: 550.00,
     images: [
       'https://imgur.com/KANCdK5.jpeg',
       'https://images.unsplash.com/photo-1614252235429-a05507e8118b'
