@@ -1,15 +1,16 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Minus, Plus, X, ShoppingBag, CheckCircle } from 'lucide-react';
+import { Minus, Plus, X, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCedi } from '@/lib/utils';
+import MoMoPaymentDialog from '@/components/MoMoPaymentDialog';
+import OTPVerificationDialog from '@/components/OTPVerificationDialog';
 
 const Cart: React.FC = () => {
   const { 
@@ -26,7 +27,11 @@ const Cart: React.FC = () => {
   
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showMoMoDialog, setShowMoMoDialog] = useState(false);
+  const [showOTPDialog, setShowOTPDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
   
   if (isLoading) {
     return (
@@ -42,7 +47,7 @@ const Cart: React.FC = () => {
     );
   }
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = () => {
     if (!user) {
       toast.error('Please log in to place an order');
       navigate('/login');
@@ -54,17 +59,22 @@ const Cart: React.FC = () => {
       return;
     }
 
+    setShowMoMoDialog(true);
+  };
+
+  const handleMoMoConfirm = async () => {
     setIsSubmitting(true);
+    setShowMoMoDialog(false);
 
     try {
-      // 1. Create order in database
+      // Create order in database with pending_payment status
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
           total: totalCost,
-          shipping_address: 'Default Address', // This would come from user profile or form
-          status: 'pending'
+          shipping_address: 'Default Address',
+          status: 'pending_payment'
         })
         .select()
         .single();
@@ -74,18 +84,9 @@ const Cart: React.FC = () => {
         throw orderError;
       }
 
-      if (!orderData || !orderData.id) {
-        throw new Error('Failed to create order - no order ID returned');
-      }
-
-      console.log('Order created successfully:', orderData);
-
-      // 2. Create order items
+      // Create order items
       const orderItems = cartItems.map(item => {
-        if (!item.product) {
-          console.error('Missing product data for cart item:', item);
-          return null;
-        }
+        if (!item.product) return null;
 
         const itemPrice = item.product.discount
           ? item.product.price * (1 - item.product.discount / 100)
@@ -101,10 +102,6 @@ const Cart: React.FC = () => {
         };
       }).filter(Boolean);
 
-      if (orderItems.length === 0) {
-        throw new Error('No valid order items to create');
-      }
-
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItems);
@@ -114,45 +111,93 @@ const Cart: React.FC = () => {
         throw itemsError;
       }
 
-      console.log('Order items created successfully');
+      setCurrentOrderId(orderData.id);
+      toast.success('Order created! Waiting for payment confirmation...');
 
-      // 3. Send invoice emails (wrapped in try/catch to continue even if this fails)
-      try {
-        const { data: invoiceData, error: invoiceError } = await supabase.functions
-          .invoke('send-invoice', {
-            body: { 
-              orderId: orderData.id,
-              userId: user.id
-            }
-          });
+      // Start polling for payment confirmation
+      const pollInterval = setInterval(async () => {
+        const { data: order } = await supabase
+          .from('orders')
+          .select('status, otp_code')
+          .eq('id', orderData.id)
+          .single();
 
-        if (invoiceError) {
-          console.error('Invoice error:', invoiceError);
-        } else {
-          console.log('Invoice sent successfully:', invoiceData);
+        if (order?.status === 'payment_confirmed' && order.otp_code) {
+          clearInterval(pollInterval);
+          setShowOTPDialog(true);
+          toast.info('Payment confirmed! Please enter the verification code.');
         }
-      } catch (invoiceErr) {
-        console.error('Failed to send invoice, but order was created:', invoiceErr);
+      }, 3000);
+
+      // Clear polling after 10 minutes
+      setTimeout(() => clearInterval(pollInterval), 600000);
+
+    } catch (error: any) {
+      console.error('Error creating order:', error);
+      toast.error(`Failed to create order: ${error.message || 'Please try again'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOTPVerify = async (otp: string) => {
+    if (!currentOrderId) return;
+
+    setIsVerifying(true);
+
+    try {
+      // Verify OTP
+      const { data: order, error: verifyError } = await supabase
+        .from('orders')
+        .select('otp_code')
+        .eq('id', currentOrderId)
+        .single();
+
+      if (verifyError) throw verifyError;
+
+      if (order.otp_code !== otp) {
+        toast.error('Invalid verification code. Please try again.');
+        setIsVerifying(false);
+        return;
       }
 
-      // 4. Clear cart after successful order
-      await clearCart();
-      console.log('Cart cleared successfully');
+      // Update order status to completed
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({ 
+          status: 'processing',
+          otp_code: null // Clear OTP after verification
+        })
+        .eq('id', currentOrderId);
 
-      // 5. Show success message and redirect
-      toast.success('Order placed successfully!');
+      if (updateError) throw updateError;
+
+      // Send invoice email
+      try {
+        await supabase.functions.invoke('send-invoice', {
+          body: { 
+            orderId: currentOrderId,
+            userId: user.id
+          }
+        });
+      } catch (invoiceErr) {
+        console.error('Failed to send invoice:', invoiceErr);
+      }
+
+      // Clear cart and show success
+      await clearCart();
+      setShowOTPDialog(false);
+      toast.success('Order completed successfully! Invoice sent to your email.');
       
-      // Redirect back to home page
       setTimeout(() => {
         navigate('/');
-        toast.info('Order confirmation has been sent to your email');
       }, 2000);
 
     } catch (error: any) {
-      console.error('Error placing order:', error);
-      toast.error(`Failed to place order: ${error.message || 'Please try again'}`);
+      console.error('Error verifying OTP:', error);
+      toast.error('Failed to verify code. Please try again.');
     } finally {
-      setIsSubmitting(false);
+      setIsVerifying(false);
     }
   };
   
@@ -180,7 +225,7 @@ const Cart: React.FC = () => {
                       
                       const itemPrice = item.product.discount
                         ? item.product.price * (1 - item.product.discount / 100)
-                        : item.product.price;
+                        : item.product.price || 0;
                         
                       return (
                         <div key={item.id} className="p-6 flex flex-col md:flex-row">
@@ -283,19 +328,11 @@ const Cart: React.FC = () => {
                     onClick={handlePlaceOrder}
                     disabled={isSubmitting || cartItems.length === 0}
                   >
-                    {isSubmitting ? (
-                      <span className="flex items-center">
-                        <span className="animate-spin mr-2">⟳</span> Processing...
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <CheckCircle className="mr-2 h-4 w-4" /> Place Order
-                      </span>
-                    )}
+                    {isSubmitting ? 'Processing...' : 'Place Order'}
                   </Button>
                   
                   <p className="mt-4 text-sm text-gray-500 text-center">
-                    By placing an order, you'll receive an invoice via email.
+                    Pay via Mobile Money to complete your order
                   </p>
                 </div>
               </div>
@@ -317,6 +354,20 @@ const Cart: React.FC = () => {
             </div>
           )}
         </div>
+        
+        <MoMoPaymentDialog
+          open={showMoMoDialog}
+          onOpenChange={setShowMoMoDialog}
+          total={totalCost}
+          onConfirm={handleMoMoConfirm}
+        />
+        
+        <OTPVerificationDialog
+          open={showOTPDialog}
+          onOpenChange={setShowOTPDialog}
+          onVerify={handleOTPVerify}
+          isVerifying={isVerifying}
+        />
       </main>
       <Footer />
     </>

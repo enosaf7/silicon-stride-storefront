@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Table,
   TableBody, 
@@ -9,7 +9,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
+import { Eye, CheckCircle } from 'lucide-react';
 import { 
   Select,
   SelectContent,
@@ -42,8 +42,14 @@ interface OrderTableProps {
 }
 
 const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefresh }) => {
+  const [processingOrders, setProcessingOrders] = useState<Set<string>>(new Set());
+
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'pending_payment':
+        return 'bg-orange-100 text-orange-800';
+      case 'payment_confirmed':
+        return 'bg-blue-100 text-blue-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
       case 'processing':
@@ -56,6 +62,39 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  const handleProceedPayment = async (orderId: string) => {
+    setProcessingOrders(prev => new Set(prev).add(orderId));
+
+    try {
+      const otp = generateOTP();
+      
+      const { error } = await supabase
+        .from('orders')
+        .update({ 
+          status: 'payment_confirmed',
+          otp_code: otp
+        })
+        .eq('id', orderId);
+        
+      if (error) throw error;
+      
+      toast.success(`Payment confirmed! OTP sent to customer: ${otp}`);
+      onRefresh();
+    } catch (error: any) {
+      toast.error(`Failed to confirm payment: ${error.message}`);
+    } finally {
+      setProcessingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
     }
   };
   
@@ -114,30 +153,56 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
                     {formatCedi(order.total)}
                   </TableCell>
                   <TableCell>
-                    <Select
-                      defaultValue={order.status}
-                      onValueChange={(value) => handleStatusChange(order.id, value)}
-                    >
-                      <SelectTrigger className={`w-[150px] ${getStatusColor(order.status)}`}>
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="shipped">Shipped</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {order.status === 'pending_payment' ? (
+                      <Badge className={getStatusColor(order.status)}>
+                        Awaiting Payment
+                      </Badge>
+                    ) : (
+                      <Select
+                        defaultValue={order.status}
+                        onValueChange={(value) => handleStatusChange(order.id, value)}
+                      >
+                        <SelectTrigger className={`w-[150px] ${getStatusColor(order.status)}`}>
+                          <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="payment_confirmed">Payment Confirmed</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="processing">Processing</SelectItem>
+                          <SelectItem value="shipped">Shipped</SelectItem>
+                          <SelectItem value="delivered">Delivered</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onViewDetails(order.id)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-2 justify-end">
+                      {order.status === 'pending_payment' && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleProceedPayment(order.id)}
+                          disabled={processingOrders.has(order.id)}
+                          className="bg-brand-orange hover:bg-brand-orange/90"
+                        >
+                          {processingOrders.has(order.id) ? (
+                            'Processing...'
+                          ) : (
+                            <>
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Proceed
+                            </>
+                          )}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onViewDetails(order.id)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
