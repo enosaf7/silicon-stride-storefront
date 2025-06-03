@@ -140,6 +140,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          otp_code: string | null
           payment_intent: string | null
           shipping_address: string
           status: string
@@ -150,6 +151,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          otp_code?: string | null
           payment_intent?: string | null
           shipping_address: string
           status?: string
@@ -160,6 +162,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          otp_code?: string | null
           payment_intent?: string | null
           shipping_address?: string
           status?: string

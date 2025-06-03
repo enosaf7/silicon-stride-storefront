@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
@@ -116,11 +117,16 @@ const Cart: React.FC = () => {
 
       // Start polling for payment confirmation
       const pollInterval = setInterval(async () => {
-        const { data: order } = await supabase
+        const { data: order, error: pollError } = await supabase
           .from('orders')
           .select('status, otp_code')
           .eq('id', orderData.id)
           .single();
+
+        if (pollError) {
+          console.error('Polling error:', pollError);
+          return;
+        }
 
         if (order?.status === 'payment_confirmed' && order.otp_code) {
           clearInterval(pollInterval);
@@ -155,7 +161,7 @@ const Cart: React.FC = () => {
 
       if (verifyError) throw verifyError;
 
-      if (order.otp_code !== otp) {
+      if (order?.otp_code !== otp) {
         toast.error('Invalid verification code. Please try again.');
         setIsVerifying(false);
         return;
