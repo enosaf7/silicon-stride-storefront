@@ -22,7 +22,7 @@ const Index: React.FC = () => {
         {/* Benefits Section */}
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Why Choose Jhoey-Silicon</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">Why Choose JE's Palace</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Benefit 1 */}
