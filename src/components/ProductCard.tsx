@@ -11,6 +11,9 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
+  // Handle both database and static data field names
+  const newArrival = product.newArrival || product.new_arrival;
+  
   return (
     <Link 
       to={`/product/${product.id}`}
@@ -30,7 +33,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
 
       {/* Labels (New, Discount) */}
       <div className="absolute top-2 left-2 flex flex-col gap-1">
-        {product.newArrival && (
+        {newArrival && (
           <span className="bg-brand-black text-white text-xs px-2 py-1 rounded">
             NEW
           </span>
@@ -58,15 +61,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
             {product.discount ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-base md:text-lg font-semibold text-brand-orange">
-                  {formatCedi(product.price * (1 - product.discount / 100))}
+                  {formatCedi(Number(product.price) * (1 - Number(product.discount) / 100))}
                 </span>
                 <span className="text-xs md:text-sm text-gray-500 line-through">
-                  {formatCedi(product.price)}
+                  {formatCedi(Number(product.price))}
                 </span>
               </div>
             ) : (
               <span className="text-base md:text-lg font-semibold text-brand-black">
-                {formatCedi(product.price)}
+                {formatCedi(Number(product.price))}
               </span>
             )}
           </div>
@@ -74,7 +77,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
           {product.rating && (
             <div className="flex items-center">
               <Star className="h-3 w-3 md:h-4 md:w-4 fill-brand-orange text-brand-orange mr-1" />
-              <span className="text-xs md:text-sm font-medium">{product.rating}</span>
+              <span className="text-xs md:text-sm font-medium">{Number(product.rating)}</span>
             </div>
           )}
         </div>

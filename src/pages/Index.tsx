@@ -1,15 +1,33 @@
 
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import NavBar from '@/components/NavBar';
 import HeroSection from '@/components/HeroSection';
 import FeaturedProducts from '@/components/FeaturedProducts';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import Footer from '@/components/Footer';
-import { products } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/utils/types';
 
 const Index: React.FC = () => {
-  const newArrivals = products.filter(product => product.newArrival);
+  const { data: newArrivals = [], isLoading: newArrivalsLoading } = useQuery({
+    queryKey: ['new-arrivals'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('new_arrival', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching new arrivals:', error);
+        throw error;
+      }
+      
+      return data as Product[];
+    }
+  });
 
   return (
     <>
@@ -72,11 +90,23 @@ const Index: React.FC = () => {
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold mb-8">New Arrivals</h2>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {newArrivals.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            {newArrivalsLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-gray-200 animate-pulse rounded-lg h-80"></div>
+                ))}
+              </div>
+            ) : newArrivals.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No new arrivals available at the moment.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {newArrivals.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
           </div>
         </section>
         
