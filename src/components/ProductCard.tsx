@@ -15,7 +15,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
     <Link 
       to={`/product/${product.id}`}
       className={cn(
-        "group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow",
+        "group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow relative",
         className
       )}
     >
@@ -43,29 +43,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
       </div>
 
       {/* Product Info */}
-      <div className="p-4">
-        <h3 className="font-medium text-lg mb-1 text-brand-black group-hover:text-brand-orange transition-colors">
+      <div className="p-3 md:p-4">
+        <h3 className="font-medium text-base md:text-lg mb-1 text-brand-black group-hover:text-brand-orange transition-colors line-clamp-2">
           {product.name}
         </h3>
         
         <div className="flex items-center mb-2">
-          <span className="text-sm text-gray-500">{product.category}</span>
+          <span className="text-xs md:text-sm text-gray-500">{product.category}</span>
         </div>
         
         {/* Price and Rating */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             {product.discount ? (
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold text-brand-orange">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-base md:text-lg font-semibold text-brand-orange">
                   {formatCedi(product.price * (1 - product.discount / 100))}
                 </span>
-                <span className="text-sm text-gray-500 line-through">
+                <span className="text-xs md:text-sm text-gray-500 line-through">
                   {formatCedi(product.price)}
                 </span>
               </div>
             ) : (
-              <span className="text-lg font-semibold text-brand-black">
+              <span className="text-base md:text-lg font-semibold text-brand-black">
                 {formatCedi(product.price)}
               </span>
             )}
@@ -73,8 +73,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
           
           {product.rating && (
             <div className="flex items-center">
-              <Star className="h-4 w-4 fill-brand-orange text-brand-orange mr-1" />
-              <span className="text-sm font-medium">{product.rating}</span>
+              <Star className="h-3 w-3 md:h-4 md:w-4 fill-brand-orange text-brand-orange mr-1" />
+              <span className="text-xs md:text-sm font-medium">{product.rating}</span>
             </div>
           )}
         </div>

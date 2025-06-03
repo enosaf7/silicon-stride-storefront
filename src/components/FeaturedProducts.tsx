@@ -10,19 +10,19 @@ const FeaturedProducts: React.FC = () => {
   const featuredProducts = getFeaturedProducts();
 
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">Featured Products</h2>
+    <section className="py-12 md:py-16 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 md:mb-8 gap-4">
+          <h2 className="text-2xl md:text-3xl font-bold">Featured Products</h2>
           <Link to="/products">
-            <Button variant="ghost" className="text-brand-orange hover:text-brand-orange/90">
+            <Button variant="ghost" className="text-brand-orange hover:text-brand-orange/90 w-full sm:w-auto">
               View All
               <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {featuredProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
