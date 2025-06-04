@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { LogOut, User, Settings, HelpCircle, LayoutDashboard } from 'lucide-react';
+import { LogOut, User, HelpCircle, LayoutDashboard } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from '@/integrations/supabase/client';
 
@@ -97,12 +97,6 @@ const ProfileMenu: React.FC = () => {
           <Link to="/profile" className="flex items-center space-x-2">
             <User className="h-4 w-4 mr-2" />
             <span>Profile</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/settings" className="flex items-center space-x-2">
-            <Settings className="h-4 w-4 mr-2" />
-            <span>Settings</span>
           </Link>
         </DropdownMenuItem>
         {isAdmin && (
