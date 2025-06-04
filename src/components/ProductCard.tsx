@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/utils/types';
@@ -14,20 +13,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
   // Handle both database and static data field names
   const newArrival = product.newArrival || product.new_arrival;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // Auto-advance slideshow for products with multiple images
+  const [fade, setFade] = useState(false);
+
+  // Slower auto-advance slideshow with smooth fade
   useEffect(() => {
     if (product.images.length > 1) {
       const interval = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-      }, 3000); // Change image every 3 seconds
-      
+        setFade(true);
+        setTimeout(() => {
+          setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+          setFade(false);
+        }, 600); // Fade duration (ms)
+      }, 7000); // Change image every 7 seconds
+
       return () => clearInterval(interval);
     }
   }, [product.images.length]);
-  
+
   return (
-    <Link 
+    <Link
       to={`/product/${product.id}`}
       className={cn(
         "group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow relative",
@@ -36,12 +40,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
     >
       {/* Product Image */}
       <div className="aspect-square w-full overflow-hidden bg-gray-100 relative">
-        <img 
-          src={product.images[currentImageIndex]} 
-          alt={product.name} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        <img
+          src={product.images[currentImageIndex]}
+          alt={product.name}
+          className={cn(
+            "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
+            fade ? "opacity-0 transition-opacity duration-600" : "opacity-100 transition-opacity duration-600"
+          )}
+          style={{ transition: 'opacity 0.6s' }}
         />
-        
+
         {/* Image indicators for multiple images */}
         {product.images.length > 1 && (
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
@@ -77,11 +85,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
         <h3 className="font-medium text-base md:text-lg mb-1 text-brand-black group-hover:text-brand-orange transition-colors line-clamp-2">
           {product.name}
         </h3>
-        
+
         <div className="flex items-center mb-2">
           <span className="text-xs md:text-sm text-gray-500">{product.category}</span>
         </div>
-        
+
         {/* Price and Rating */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -90,7 +98,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
                 <span className="text-base md:text-lg font-semibold text-brand-orange">
                   {formatCedi(Number(product.price) * (1 - Number(product.discount) / 100))}
                 </span>
-                <span className="text-xs md:text-sm text-gray-500 line-through">
+                <span className="line-through text-gray-400 text-sm">
                   {formatCedi(Number(product.price))}
                 </span>
               </div>
@@ -100,13 +108,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
               </span>
             )}
           </div>
-          
-          {product.rating && (
-            <div className="flex items-center">
-              <Star className="h-3 w-3 md:h-4 md:w-4 fill-brand-orange text-brand-orange mr-1" />
-              <span className="text-xs md:text-sm font-medium">{Number(product.rating)}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1">
+            <Star className="h-4 w-4 text-yellow-400" />
+            <span className="text-xs text-gray-600">{product.rating?.toFixed(1) || "N/A"}</span>
+          </div>
         </div>
       </div>
     </Link>
