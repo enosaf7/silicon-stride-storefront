@@ -15,6 +15,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import Help from "./pages/Help";
+import SizeGuide from "./pages/SizeGuide";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -52,6 +54,8 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/help" element={<Help />} />
+              <Route path="/size-guide" element={<SizeGuide />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/cart" element={
                 <ProtectedRoute>
                   <Cart />

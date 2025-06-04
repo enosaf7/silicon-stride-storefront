@@ -97,6 +97,41 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
       });
     }
   };
+
+  const reduceProductStock = async (orderId: string) => {
+    try {
+      // Get order items for this order
+      const { data: orderItems, error: orderItemsError } = await supabase
+        .from('order_items')
+        .select('product_id, quantity')
+        .eq('order_id', orderId);
+
+      if (orderItemsError) throw orderItemsError;
+
+      // Update stock for each product
+      for (const item of orderItems) {
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .select('stock')
+          .eq('id', item.product_id)
+          .single();
+
+        if (productError) throw productError;
+
+        const newStock = Math.max(0, product.stock - item.quantity);
+
+        const { error: updateError } = await supabase
+          .from('products')
+          .update({ stock: newStock })
+          .eq('id', item.product_id);
+
+        if (updateError) throw updateError;
+      }
+    } catch (error) {
+      console.error('Error reducing stock:', error);
+      throw error;
+    }
+  };
   
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
@@ -106,8 +141,13 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
         .eq('id', orderId);
         
       if (error) throw error;
+
+      // Reduce stock when order is shipped or delivered
+      if (newStatus === 'shipped' || newStatus === 'delivered') {
+        await reduceProductStock(orderId);
+      }
       
-      toast.success(`Order status updated to ${newStatus}`);
+      toast.success(`Order status updated to ${newStatus}${(newStatus === 'shipped' || newStatus === 'delivered') ? ' and stock reduced' : ''}`);
       onRefresh();
     } catch (error: any) {
       toast.error(`Failed to update order status: ${error.message}`);

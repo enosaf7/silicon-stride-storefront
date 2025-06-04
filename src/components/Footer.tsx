@@ -61,13 +61,13 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/careers" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
-                  Careers
+                <Link to="/size-guide" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
+                  Size Guide
                 </Link>
               </li>
               <li>
-                <Link to="/stores" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
-                  Store Locations
+                <Link to="/help" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
+                  Help & Support
                 </Link>
               </li>
             </ul>
@@ -75,26 +75,26 @@ const Footer: React.FC = () => {
 
           {/* Customer Service Links */}
           <div>
-            <h4 className="text-base md:text-lg mb-3 md:mb-4 font-semibold">Customer Service</h4>
+            <h4 className="text-base md:text-lg mb-3 md:mb-4 font-semibold">Legal</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/faq" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
-                  FAQs
+                <Link to="/privacy" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
+                  Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/shipping" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
+                <Link to="/help" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link to="/help" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
                   Shipping & Returns
                 </Link>
               </li>
               <li>
                 <Link to="/size-guide" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
                   Size Guide
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className="text-gray-300 hover:text-brand-orange transition-colors text-sm md:text-base">
-                  Privacy Policy
                 </Link>
               </li>
             </ul>
