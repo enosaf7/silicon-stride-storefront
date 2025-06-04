@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/utils/types';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { cn, formatCedi } from '@/lib/utils';
 
 interface ProductCardProps {
@@ -9,66 +9,9 @@ interface ProductCardProps {
   className?: string;
 }
 
-const SLIDE_DURATION = 900; // ms for slide animation
-const INTERVAL = 10000; // 10 seconds per image
-
 const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
+  // Handle both database and static data field names
   const newArrival = product.newArrival || product.new_arrival;
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [nextImageIndex, setNextImageIndex] = useState<number | null>(null);
-  const [sliding, setSliding] = useState<null | 'left' | 'right'>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const slideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Helper to change image
-  const startSlide = (targetIndex: number, direction: 'left' | 'right') => {
-    if (targetIndex === currentImageIndex || sliding) return;
-    setNextImageIndex(targetIndex);
-    setSliding(direction);
-    if (timerRef.current) clearInterval(timerRef.current);
-    slideTimeoutRef.current = setTimeout(() => {
-      setCurrentImageIndex(targetIndex);
-      setNextImageIndex(null);
-      setSliding(null);
-    }, SLIDE_DURATION);
-  };
-
-  // Auto slideshow effect
-  useEffect(() => {
-    if (product.images.length <= 1) return;
-    timerRef.current = setInterval(() => {
-      const nextIdx = (currentImageIndex + 1) % product.images.length;
-      startSlide(nextIdx, 'left');
-    }, INTERVAL);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (slideTimeoutRef.current) clearTimeout(slideTimeoutRef.current);
-    };
-    // eslint-disable-next-line
-  }, [currentImageIndex, product.images.length]);
-
-  // Manual navigation
-  const handlePrev = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    const prevIdx = (currentImageIndex - 1 + product.images.length) % product.images.length;
-    startSlide(prevIdx, 'right');
-  };
-  const handleNext = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    const nextIdx = (currentImageIndex + 1) % product.images.length;
-    startSlide(nextIdx, 'left');
-  };
-
-  // Indicator click
-  const handleIndicatorClick = (idx: number) => {
-    if (idx === currentImageIndex || sliding) return;
-    const direction = idx > currentImageIndex ||
-      (currentImageIndex === product.images.length - 1 && idx === 0)
-      ? 'left'
-      : 'right';
-    startSlide(idx, direction);
-  };
 
   return (
     <Link
@@ -78,100 +21,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
         className
       )}
     >
-      {/* Product Image Slider */}
-      <div className="aspect-square w-full overflow-hidden bg-gray-100 relative select-none">
-        <div className="w-full h-full relative" style={{ height: "100%" }}>
-          {/* Current Image (slide out if sliding) */}
-          <img
-            src={product.images[currentImageIndex]}
-            alt={product.name}
-            className={cn(
-              "absolute top-0 left-0 w-full h-full object-cover transition-transform duration-900 will-change-transform z-10",
-              sliding === 'left'
-                ? "translate-x-[-100%]"
-                : sliding === 'right'
-                ? "translate-x-[100%]"
-                : "translate-x-0"
-            )}
-            style={{
-              transition: `transform ${SLIDE_DURATION}ms cubic-bezier(0.6,0,0.4,1)`
-            }}
-            draggable={false}
-          />
-          {/* Next Image (slide in from direction) */}
-          {sliding && nextImageIndex !== null && (
-            <img
-              src={product.images[nextImageIndex]}
-              alt={product.name + " preview"}
-              className={cn(
-                "absolute top-0 left-0 w-full h-full object-cover transition-transform duration-900 will-change-transform z-20"
-              )}
-              style={{
-                transform:
-                  sliding === 'left'
-                    ? "translateX(100%)"
-                    : "translateX(-100%)",
-                animation: `${sliding === 'left' ? 'slideInFromRight' : 'slideInFromLeft'} ${SLIDE_DURATION}ms cubic-bezier(0.6,0,0.4,1) forwards`
-              }}
-              draggable={false}
-            />
-          )}
-          {/* Slide animation keyframes */}
-          <style>
-            {`
-            @keyframes slideInFromRight {
-              from { transform: translateX(100%); }
-              to { transform: translateX(0); }
-            }
-            @keyframes slideInFromLeft {
-              from { transform: translateX(-100%); }
-              to { transform: translateX(0); }
-            }
-            `}
-          </style>
-          {/* Navigation Buttons */}
-          {product.images.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="absolute top-1/2 left-2 -translate-y-1/2 z-30 bg-white/70 hover:bg-white rounded-full shadow p-1 transition"
-                aria-label="Previous image"
-                tabIndex={0}
-              >
-                <ChevronLeft className="w-5 h-5 text-brand-black" />
-              </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="absolute top-1/2 right-2 -translate-y-1/2 z-30 bg-white/70 hover:bg-white rounded-full shadow p-1 transition"
-                aria-label="Next image"
-                tabIndex={0}
-              >
-                <ChevronRight className="w-5 h-5 text-brand-black" />
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Image indicators for multiple images */}
-        {product.images.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 z-20">
-            {product.images.map((_, index) => (
-              <div
-                key={index}
-                onClick={() => handleIndicatorClick(index)}
-                className={cn(
-                  "w-2 h-2 rounded-full transition-colors cursor-pointer",
-                  index === currentImageIndex
-                    ? "bg-white ring-2 ring-brand-orange"
-                    : "bg-white/50"
-                )}
-                style={{ transition: 'background 0.3s' }}
-              />
-            ))}
-          </div>
-        )}
+      {/* Product Image */}
+      <div className="aspect-square w-full overflow-hidden bg-gray-100 relative">
+        <img
+          src={product.images[0]}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          draggable={false}
+        />
       </div>
 
       {/* Labels (New, Discount) */}
