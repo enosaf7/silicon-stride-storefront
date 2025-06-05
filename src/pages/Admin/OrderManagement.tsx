@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -33,32 +32,32 @@ const OrderManagement: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  
+
   const { data: orders, isLoading, refetch } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
-      // First get the orders including the processed_by_admin column
+      // Fetch all orders (not filtered by admin)
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false });
-        
+
       if (ordersError) {
         toast.error('Failed to load orders');
         throw ordersError;
       }
-      
-      // Then get the profiles separately for customers and processing admins
+
+      // Attach customer and admin profiles to each order
       const enhancedOrders = await Promise.all(
         ordersData.map(async (order) => {
-          // Get customer profile
+          // Customer profile
           const { data: customerProfile } = await supabase
             .from('profiles')
             .select('first_name, last_name')
             .eq('id', order.user_id)
             .single();
 
-          // Get processing admin profile if exists
+          // Processing admin profile, if exists
           let processingAdminProfile = null;
           if (order.processed_by_admin) {
             const { data: adminProfile } = await supabase
@@ -68,20 +67,20 @@ const OrderManagement: React.FC = () => {
               .single();
             processingAdminProfile = adminProfile;
           }
-            
+
           return {
             ...order,
             profiles: customerProfile || { first_name: null, last_name: null },
-            processed_by: processingAdminProfile
+            processed_by: processingAdminProfile,
           };
         })
       );
-      
+
       return enhancedOrders as Order[];
-    }
+    },
   });
 
-  // Set up real-time subscription for orders
+  // Listen for real-time order changes
   useEffect(() => {
     const channel = supabase
       .channel('admin-orders-changes')
@@ -90,7 +89,7 @@ const OrderManagement: React.FC = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'orders'
+          table: 'orders',
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
@@ -102,7 +101,7 @@ const OrderManagement: React.FC = () => {
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
-  
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -110,38 +109,38 @@ const OrderManagement: React.FC = () => {
       </div>
     );
   }
-  
+
   if (!user || !isAdmin) {
     navigate('/login');
     return null;
   }
-  
+
   const handleViewOrderDetails = (orderId: string) => {
     setSelectedOrderId(orderId);
   };
-  
+
   return (
     <AdminLayout>
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Order Management</h1>
           <p className="text-gray-600 mt-2">
-            Shared dashboard for all admins - All order changes are visible to all administrators in real-time
+            Shared dashboard for all admins - All order changes are visible to all administrators in real-time.
           </p>
         </div>
-        
+
         {isLoading ? (
           <div className="flex items-center justify-center py-10">
             <Loader className="h-8 w-8 animate-spin text-brand-orange" />
           </div>
         ) : (
-          <OrderTable 
-            orders={orders || []} 
+          <OrderTable
+            orders={orders || []}
             onViewDetails={handleViewOrderDetails}
             onRefresh={refetch}
           />
         )}
-        
+
         <OrderDetailsDialog
           open={!!selectedOrderId}
           onOpenChange={(open) => {
