@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/Admin/AdminLayout';
 import ProductTable from '@/components/Admin/ProductTable';
@@ -15,6 +15,7 @@ import { Product } from '@/utils/types';
 const ProductManagement: React.FC = () => {
   const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
@@ -34,6 +35,28 @@ const ProductManagement: React.FC = () => {
       return data as Product[];
     }
   });
+
+  // Set up real-time subscription for products
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-products-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
   
   if (loading) {
     return (

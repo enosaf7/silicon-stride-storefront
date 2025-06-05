@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ShoppingBag, Users, Package, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,6 +14,8 @@ interface StatsResponse {
 }
 
 const DashboardStats: React.FC = () => {
+  const queryClient = useQueryClient();
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin-dashboard-stats'],
     queryFn: async () => {
@@ -40,6 +42,60 @@ const DashboardStats: React.FC = () => {
       } as StatsResponse;
     }
   });
+
+  // Set up real-time subscriptions for all relevant tables
+  useEffect(() => {
+    const ordersChannel = supabase
+      .channel('dashboard-orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+        }
+      )
+      .subscribe();
+
+    const productsChannel = supabase
+      .channel('dashboard-products-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+        }
+      )
+      .subscribe();
+
+    const profilesChannel = supabase
+      .channel('dashboard-profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(productsChannel);
+      supabase.removeChannel(profilesChannel);
+    };
+  }, [queryClient]);
   
   const statCards = [
     {

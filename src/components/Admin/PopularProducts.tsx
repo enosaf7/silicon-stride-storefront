@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +17,7 @@ interface PopularProduct {
 
 const PopularProducts: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   const { data: products, isLoading } = useQuery({
     queryKey: ['admin-popular-products'],
@@ -38,6 +39,28 @@ const PopularProducts: React.FC = () => {
       })) as PopularProduct[];
     }
   });
+
+  // Set up real-time subscription for products
+  useEffect(() => {
+    const channel = supabase
+      .channel('popular-products-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-popular-products'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
   
   return (
     <Card>

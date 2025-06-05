@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/Admin/AdminLayout';
 import OrderTable from '@/components/Admin/OrderTable';
@@ -29,6 +29,7 @@ interface Order {
 const OrderManagement: React.FC = () => {
   const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   
   const { data: orders, isLoading, refetch } = useQuery({
@@ -64,6 +65,28 @@ const OrderManagement: React.FC = () => {
       return enhancedOrders as Order[];
     }
   });
+
+  // Set up real-time subscription for orders
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
   
   if (loading) {
     return (

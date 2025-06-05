@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +23,7 @@ interface Order {
 
 const RecentOrders: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-recent-orders'],
@@ -55,6 +56,28 @@ const RecentOrders: React.FC = () => {
       return enhancedOrders as Order[];
     }
   });
+
+  // Set up real-time subscription for orders
+  useEffect(() => {
+    const channel = supabase
+      .channel('recent-orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-recent-orders'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
   
   const getStatusColor = (status: string) => {
     switch (status) {

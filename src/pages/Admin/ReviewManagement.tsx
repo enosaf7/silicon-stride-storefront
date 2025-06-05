@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/Admin/AdminLayout';
 import ReviewTable from '@/components/Admin/ReviewTable';
@@ -19,6 +19,7 @@ interface ExtendedReview extends Review {
 const ReviewManagement: React.FC = () => {
   const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   const { data: reviews, isLoading, refetch } = useQuery({
     queryKey: ['admin-reviews'],
@@ -41,6 +42,28 @@ const ReviewManagement: React.FC = () => {
       return data as ExtendedReview[];
     }
   });
+
+  // Set up real-time subscription for reviews
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-reviews-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reviews'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
   
   if (loading) {
     return (

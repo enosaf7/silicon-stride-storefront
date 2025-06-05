@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/Admin/AdminLayout';
 import UserTable from '@/components/Admin/UserTable';
@@ -23,6 +23,7 @@ interface User {
 const UserManagement: React.FC = () => {
   const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['admin-users'],
@@ -69,6 +70,44 @@ const UserManagement: React.FC = () => {
       return usersWithRoles as User[];
     }
   });
+
+  // Set up real-time subscriptions for user-related changes
+  useEffect(() => {
+    const profilesChannel = supabase
+      .channel('admin-profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+        }
+      )
+      .subscribe();
+
+    const userRolesChannel = supabase
+      .channel('admin-user-roles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_roles'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profilesChannel);
+      supabase.removeChannel(userRolesChannel);
+    };
+  }, [queryClient]);
   
   if (loading) {
     return (
