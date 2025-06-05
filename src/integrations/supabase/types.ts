@@ -142,6 +142,7 @@ export type Database = {
           id: string
           otp_code: string | null
           payment_intent: string | null
+          processed_by_admin: string | null
           shipping_address: string
           status: string
           total: number
@@ -153,6 +154,7 @@ export type Database = {
           id?: string
           otp_code?: string | null
           payment_intent?: string | null
+          processed_by_admin?: string | null
           shipping_address: string
           status?: string
           total: number
@@ -164,6 +166,7 @@ export type Database = {
           id?: string
           otp_code?: string | null
           payment_intent?: string | null
+          processed_by_admin?: string | null
           shipping_address?: string
           status?: string
           total?: number

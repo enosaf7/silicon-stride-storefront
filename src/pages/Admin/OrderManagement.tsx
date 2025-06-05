@@ -37,7 +37,7 @@ const OrderManagement: React.FC = () => {
   const { data: orders, isLoading, refetch } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
-      // First get the orders
+      // First get the orders including the processed_by_admin column
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
