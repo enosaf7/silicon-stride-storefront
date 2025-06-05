@@ -23,7 +23,9 @@ interface Order {
   total: number;
   shipping_address: string;
   payment_intent: string | null;
+  processed_by_admin: string | null;
   profiles?: Profile;
+  processed_by?: Profile;
 }
 
 const OrderManagement: React.FC = () => {
@@ -46,18 +48,31 @@ const OrderManagement: React.FC = () => {
         throw ordersError;
       }
       
-      // Then get the profiles separately
+      // Then get the profiles separately for customers and processing admins
       const enhancedOrders = await Promise.all(
         ordersData.map(async (order) => {
-          const { data: profileData } = await supabase
+          // Get customer profile
+          const { data: customerProfile } = await supabase
             .from('profiles')
             .select('first_name, last_name')
             .eq('id', order.user_id)
             .single();
+
+          // Get processing admin profile if exists
+          let processingAdminProfile = null;
+          if (order.processed_by_admin) {
+            const { data: adminProfile } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('id', order.processed_by_admin)
+              .single();
+            processingAdminProfile = adminProfile;
+          }
             
           return {
             ...order,
-            profiles: profileData || { first_name: null, last_name: null }
+            profiles: customerProfile || { first_name: null, last_name: null },
+            processed_by: processingAdminProfile
           };
         })
       );
@@ -108,7 +123,12 @@ const OrderManagement: React.FC = () => {
   return (
     <AdminLayout>
       <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6">Order Management</h1>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">Order Management</h1>
+          <p className="text-gray-600 mt-2">
+            Shared dashboard for all admins - All order changes are visible to all administrators in real-time
+          </p>
+        </div>
         
         {isLoading ? (
           <div className="flex items-center justify-center py-10">

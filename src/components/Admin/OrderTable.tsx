@@ -21,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { formatCedi } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Order {
   id: string;
@@ -29,6 +30,10 @@ interface Order {
   total: number;
   shipping_address: string;
   payment_intent: string | null;
+  processed_by?: {
+    first_name: string;
+    last_name: string;
+  };
   profiles?: {
     first_name: string;
     last_name: string;
@@ -43,6 +48,7 @@ interface OrderTableProps {
 
 const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefresh }) => {
   const [processingOrders, setProcessingOrders] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -79,7 +85,8 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
         .from('orders')
         .update({ 
           status: 'payment_confirmed',
-          otp_code: otp
+          otp_code: otp,
+          processed_by_admin: user?.id
         })
         .eq('id', orderId);
         
@@ -137,7 +144,10 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus })
+        .update({ 
+          status: newStatus,
+          processed_by_admin: user?.id
+        })
         .eq('id', orderId);
         
       if (error) throw error;
@@ -165,13 +175,14 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
               <TableHead>Date</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Processed By</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                   No orders found
                 </TableCell>
               </TableRow>
@@ -214,6 +225,15 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {order.processed_by ? (
+                      <span className="text-sm text-gray-600">
+                        {order.processed_by.first_name} {order.processed_by.last_name}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400">Not processed</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">

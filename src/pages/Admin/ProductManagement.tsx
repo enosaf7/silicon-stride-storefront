@@ -90,8 +90,13 @@ const ProductManagement: React.FC = () => {
   return (
     <AdminLayout>
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Product Management</h1>
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">Product Management</h1>
+            <p className="text-gray-600 mt-1">
+              Shared dashboard - All product changes are visible to all administrators
+            </p>
+          </div>
           <Button className="bg-brand-orange hover:bg-brand-orange/90" onClick={handleAddProduct}>
             <Plus className="h-4 w-4 mr-2" /> Add Product
           </Button>
