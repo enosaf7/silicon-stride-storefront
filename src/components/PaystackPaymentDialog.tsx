@@ -38,7 +38,7 @@ const PaystackPaymentDialog: React.FC<PaystackPaymentDialogProps> = ({
     script.src = 'https://js.paystack.co/v1/inline.js';
     script.onload = () => {
       const handler = (window as any).PaystackPop.setup({
-        key: 'pk_test_b3a98848f055960ae6aff18a256c4e0a56b71027',
+        key: 'pk_live_b3a98848f055960ae6aff18a256c4e0a56b71027', // Live public key
         email: customerEmail,
         amount: total * 100, // Paystack expects amount in kobo (GHS * 100)
         currency: 'GHS',
