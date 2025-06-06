@@ -10,8 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCedi } from '@/lib/utils';
-import MoMoPaymentDialog from '@/components/MoMoPaymentDialog';
-import OTPVerificationDialog from '@/components/OTPVerificationDialog';
+import PaystackPaymentDialog from '@/components/PaystackPaymentDialog';
 
 const Cart: React.FC = () => {
   const { 
@@ -28,10 +27,8 @@ const Cart: React.FC = () => {
   
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [showMoMoDialog, setShowMoMoDialog] = useState(false);
-  const [showOTPDialog, setShowOTPDialog] = useState(false);
+  const [showPaystackDialog, setShowPaystackDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
   
   if (isLoading) {
@@ -48,7 +45,7 @@ const Cart: React.FC = () => {
     );
   }
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!user) {
       toast.error('Please log in to place an order');
       navigate('/login');
@@ -60,12 +57,7 @@ const Cart: React.FC = () => {
       return;
     }
 
-    setShowMoMoDialog(true);
-  };
-
-  const handleMoMoConfirm = async () => {
     setIsSubmitting(true);
-    setShowMoMoDialog(false);
 
     try {
       // Create order in database with pending_payment status
@@ -113,30 +105,7 @@ const Cart: React.FC = () => {
       }
 
       setCurrentOrderId(orderData.id);
-      toast.success('Order created! Waiting for payment confirmation...');
-
-      // Start polling for payment confirmation
-      const pollInterval = setInterval(async () => {
-        const { data: order, error: pollError } = await supabase
-          .from('orders')
-          .select('status, otp_code')
-          .eq('id', orderData.id)
-          .single();
-
-        if (pollError) {
-          console.error('Polling error:', pollError);
-          return;
-        }
-
-        if (order?.status === 'payment_confirmed' && order.otp_code) {
-          clearInterval(pollInterval);
-          setShowOTPDialog(true);
-          toast.info('Payment confirmed! Please enter the verification code.');
-        }
-      }, 3000);
-
-      // Clear polling after 10 minutes
-      setTimeout(() => clearInterval(pollInterval), 600000);
+      setShowPaystackDialog(true);
 
     } catch (error: any) {
       console.error('Error creating order:', error);
@@ -146,37 +115,19 @@ const Cart: React.FC = () => {
     }
   };
 
-  const handleOTPVerify = async (otp: string) => {
+  const handlePaymentSuccess = async (reference: string) => {
     if (!currentOrderId) return;
 
-    setIsVerifying(true);
-
     try {
-      // Verify OTP
-      const { data: order, error: verifyError } = await supabase
-        .from('orders')
-        .select('otp_code')
-        .eq('id', currentOrderId)
-        .single();
+      // Verify payment with our edge function
+      const { data, error } = await supabase.functions.invoke('verify-paystack-payment', {
+        body: { 
+          reference,
+          orderId: currentOrderId
+        }
+      });
 
-      if (verifyError) throw verifyError;
-
-      if (order?.otp_code !== otp) {
-        toast.error('Invalid verification code. Please try again.');
-        setIsVerifying(false);
-        return;
-      }
-
-      // Update order status to completed
-      const { error: updateError } = await supabase
-        .from('orders')
-        .update({ 
-          status: 'processing',
-          otp_code: null // Clear OTP after verification
-        })
-        .eq('id', currentOrderId);
-
-      if (updateError) throw updateError;
+      if (error) throw error;
 
       // Send invoice email
       try {
@@ -192,19 +143,21 @@ const Cart: React.FC = () => {
 
       // Clear cart and show success
       await clearCart();
-      setShowOTPDialog(false);
-      toast.success('Order completed successfully! Invoice sent to your email.');
+      toast.success('Payment successful! Order completed. Invoice sent to your email.');
       
       setTimeout(() => {
         navigate('/');
       }, 2000);
 
     } catch (error: any) {
-      console.error('Error verifying OTP:', error);
-      toast.error('Failed to verify code. Please try again.');
-    } finally {
-      setIsVerifying(false);
+      console.error('Error verifying payment:', error);
+      toast.error('Payment verification failed. Please contact support.');
     }
+  };
+
+  const handlePaymentError = (error: any) => {
+    console.error('Payment error:', error);
+    toast.error('Payment failed. Please try again.');
   };
   
   return (
@@ -334,11 +287,11 @@ const Cart: React.FC = () => {
                     onClick={handlePlaceOrder}
                     disabled={isSubmitting || cartItems.length === 0}
                   >
-                    {isSubmitting ? 'Processing...' : 'Place Order'}
+                    {isSubmitting ? 'Creating Order...' : 'Checkout with Paystack'}
                   </Button>
                   
                   <p className="mt-4 text-sm text-gray-500 text-center">
-                    Pay via Mobile Money to complete your order
+                    Secure payment powered by Paystack
                   </p>
                 </div>
               </div>
@@ -361,18 +314,13 @@ const Cart: React.FC = () => {
           )}
         </div>
         
-        <MoMoPaymentDialog
-          open={showMoMoDialog}
-          onOpenChange={setShowMoMoDialog}
+        <PaystackPaymentDialog
+          open={showPaystackDialog}
+          onOpenChange={setShowPaystackDialog}
           total={totalCost}
-          onConfirm={handleMoMoConfirm}
-        />
-        
-        <OTPVerificationDialog
-          open={showOTPDialog}
-          onOpenChange={setShowOTPDialog}
-          onVerify={handleOTPVerify}
-          isVerifying={isVerifying}
+          customerEmail={user?.email || ''}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
         />
       </main>
       <Footer />
