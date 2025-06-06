@@ -1,3 +1,4 @@
+
 import React, { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -108,10 +109,10 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
           
           // If it's a File object, upload it to Supabase Storage
           if (image instanceof File) {
-            const fileName = ${Date.now()}-${image.name};
+            const fileName = `${Date.now()}-${image.name}`;
             const { data, error } = await supabase.storage
               .from('product-images')
-              .upload(products/${fileName}, image);
+              .upload(`products/${fileName}`, image);
               
             if (error) {
               console.error('Upload error:', error);
@@ -121,7 +122,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
             // Get the public URL
             const { data: publicURL } = supabase.storage
               .from('product-images')
-              .getPublicUrl(products/${fileName});
+              .getPublicUrl(`products/${fileName}`);
               
             return publicURL.publicUrl;
           }
@@ -180,7 +181,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
       
       onSaved();
     } catch (error: any) {
-      toast.error(Failed to ${isEditing ? 'update' : 'create'} product: ${error.message});
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} product: ${error.message}`);
     }
   };
   
@@ -388,13 +389,13 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
                             {typeof file === 'string' ? (
                               <img 
                                 src={file} 
-                                alt={Image ${index + 1}}
+                                alt={`Image ${index + 1}`}
                                 className="h-full w-full object-cover"
                               />
                             ) : (
                               <img 
                                 src={URL.createObjectURL(file)} 
-                                alt={Image ${index + 1}}
+                                alt={`Image ${index + 1}`}
                                 className="h-full w-full object-cover"
                               />
                             )}
@@ -407,7 +408,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
                               }
                             </p>
                             <p className="text-xs text-gray-500">
-                              {typeof file !== 'string' && (file.size / 1024).toFixed(1)} KB
+                              {typeof file !== 'string' && `${(file.size / 1024).toFixed(1)} KB`}
                             </p>
                           </div>
                           <button 
