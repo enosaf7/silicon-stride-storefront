@@ -139,11 +139,17 @@ export type Database = {
       orders: {
         Row: {
           created_at: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          delivery_type: string | null
+          gps_coordinates: string | null
           id: string
           otp_code: string | null
           payment_intent: string | null
           processed_by_admin: string | null
+          region: string | null
           shipping_address: string
+          shipping_fee: number | null
           status: string
           total: number
           updated_at: string | null
@@ -151,11 +157,17 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_type?: string | null
+          gps_coordinates?: string | null
           id?: string
           otp_code?: string | null
           payment_intent?: string | null
           processed_by_admin?: string | null
+          region?: string | null
           shipping_address: string
+          shipping_fee?: number | null
           status?: string
           total: number
           updated_at?: string | null
@@ -163,11 +175,17 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_type?: string | null
+          gps_coordinates?: string | null
           id?: string
           otp_code?: string | null
           payment_intent?: string | null
           processed_by_admin?: string | null
+          region?: string | null
           shipping_address?: string
+          shipping_fee?: number | null
           status?: string
           total?: number
           updated_at?: string | null

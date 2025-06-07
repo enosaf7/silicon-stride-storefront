@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
@@ -11,17 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatCedi } from '@/lib/utils';
 import PaystackPaymentDialog from '@/components/PaystackPaymentDialog';
 import ShippingDialog from '@/components/ShippingDialog';
-
-interface ShippingData {
-  deliveryType: 'delivery' | 'pickup';
-  fullName: string;
-  phone: string;
-  address: string;
-  gpsAddress: string;
-  coordinates: [number, number] | null;
-  shippingFee: number;
-  region: string;
-}
+import { ShippingData } from '@/utils/types';
 
 const Cart: React.FC = () => {
   const { 
@@ -90,6 +81,21 @@ const Cart: React.FC = () => {
     try {
       const finalTotal = data.deliveryType === 'pickup' ? subtotal : subtotal + data.shippingFee;
       
+      console.log('Creating order with data:', {
+        user_id: user.id,
+        total: finalTotal,
+        shipping_address: data.deliveryType === 'pickup' 
+          ? 'Pickup from Makola Market' 
+          : `${data.address}, ${data.gpsAddress}`,
+        status: 'pending_payment',
+        delivery_type: data.deliveryType,
+        customer_name: data.fullName,
+        customer_phone: data.phone,
+        shipping_fee: data.deliveryType === 'pickup' ? 0 : data.shippingFee,
+        region: data.region || 'N/A',
+        gps_coordinates: data.coordinates ? `${data.coordinates[1]},${data.coordinates[0]}` : null
+      });
+      
       // Create order in database with shipping information
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
@@ -115,6 +121,8 @@ const Cart: React.FC = () => {
         throw orderError;
       }
 
+      console.log('Order created successfully:', orderData);
+
       // Create order items
       const orderItems = cartItems.map(item => {
         if (!item.product) return null;
@@ -133,6 +141,8 @@ const Cart: React.FC = () => {
         };
       }).filter(Boolean);
 
+      console.log('Creating order items:', orderItems);
+
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItems);
@@ -141,6 +151,8 @@ const Cart: React.FC = () => {
         console.error('Order items error:', itemsError);
         throw itemsError;
       }
+
+      console.log('Order items created successfully');
 
       setCurrentOrderId(orderData.id);
       setShowShippingDialog(false);
