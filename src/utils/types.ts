@@ -53,3 +53,30 @@ export interface SearchFilters {
   priceRange?: [number, number];
   sortBy?: 'price-asc' | 'price-desc' | 'rating' | 'newest';
 }
+
+export interface ShippingData {
+  deliveryType: 'delivery' | 'pickup';
+  fullName: string;
+  phone: string;
+  address: string;
+  gpsAddress: string;
+  coordinates: [number, number] | null;
+  shippingFee: number;
+  region: string;
+}
+
+export interface Order {
+  id: string;
+  user_id: string;
+  total: number;
+  shipping_address: string;
+  status: 'pending_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  delivery_type?: 'delivery' | 'pickup';
+  customer_name?: string;
+  customer_phone?: string;
+  shipping_fee?: number;
+  region?: string;
+  gps_coordinates?: string;
+  created_at: string;
+  updated_at: string;
+}

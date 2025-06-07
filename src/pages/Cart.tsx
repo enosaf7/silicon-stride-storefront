@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
@@ -11,6 +10,18 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCedi } from '@/lib/utils';
 import PaystackPaymentDialog from '@/components/PaystackPaymentDialog';
+import ShippingDialog from '@/components/ShippingDialog';
+
+interface ShippingData {
+  deliveryType: 'delivery' | 'pickup';
+  fullName: string;
+  phone: string;
+  address: string;
+  gpsAddress: string;
+  coordinates: [number, number] | null;
+  shippingFee: number;
+  region: string;
+}
 
 const Cart: React.FC = () => {
   const { 
@@ -27,9 +38,11 @@ const Cart: React.FC = () => {
   
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showShippingDialog, setShowShippingDialog] = useState(false);
   const [showPaystackDialog, setShowPaystackDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
+  const [shippingData, setShippingData] = useState<ShippingData | null>(null);
   
   if (isLoading) {
     return (
@@ -45,7 +58,17 @@ const Cart: React.FC = () => {
     );
   }
 
-  const handlePlaceOrder = async () => {
+  const calculateTotalWithShipping = () => {
+    if (!shippingData) return totalCost;
+    
+    if (shippingData.deliveryType === 'pickup') {
+      return subtotal; // No shipping fee for pickup
+    }
+    
+    return subtotal + shippingData.shippingFee;
+  };
+
+  const handleCheckout = async () => {
     if (!user) {
       toast.error('Please log in to place an order');
       navigate('/login');
@@ -57,17 +80,32 @@ const Cart: React.FC = () => {
       return;
     }
 
+    setShowShippingDialog(true);
+  };
+
+  const handleShippingSubmit = async (data: ShippingData) => {
     setIsSubmitting(true);
+    setShippingData(data);
 
     try {
-      // Create order in database with pending_payment status
+      const finalTotal = data.deliveryType === 'pickup' ? subtotal : subtotal + data.shippingFee;
+      
+      // Create order in database with shipping information
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
-          total: totalCost,
-          shipping_address: 'Default Address',
-          status: 'pending_payment'
+          total: finalTotal,
+          shipping_address: data.deliveryType === 'pickup' 
+            ? 'Pickup from Makola Market' 
+            : `${data.address}, ${data.gpsAddress}`,
+          status: 'pending_payment',
+          delivery_type: data.deliveryType,
+          customer_name: data.fullName,
+          customer_phone: data.phone,
+          shipping_fee: data.deliveryType === 'pickup' ? 0 : data.shippingFee,
+          region: data.region || 'N/A',
+          gps_coordinates: data.coordinates ? `${data.coordinates[1]},${data.coordinates[0]}` : null
         })
         .select()
         .single();
@@ -105,6 +143,7 @@ const Cart: React.FC = () => {
       }
 
       setCurrentOrderId(orderData.id);
+      setShowShippingDialog(false);
       setShowPaystackDialog(true);
 
     } catch (error: any) {
@@ -267,24 +306,24 @@ const Cart: React.FC = () => {
                       <span>{formatCedi(subtotal)}</span>
                     </div>
                     
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Shipping</span>
-                      <span>
-                        {shippingCost === 0 ? 'Free' : formatCedi(shippingCost)}
-                      </span>
-                    </div>
+                    {shippingData && shippingData.deliveryType === 'delivery' && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Shipping</span>
+                        <span>{formatCedi(shippingData.shippingFee)}</span>
+                      </div>
+                    )}
                     
                     <div className="h-px bg-gray-200"></div>
                     
                     <div className="flex justify-between text-lg font-semibold">
                       <span>Total</span>
-                      <span>{formatCedi(totalCost)}</span>
+                      <span>{formatCedi(shippingData ? calculateTotalWithShipping() : totalCost)}</span>
                     </div>
                   </div>
                   
                   <Button 
                     className="w-full bg-brand-orange hover:bg-brand-orange/90"
-                    onClick={handlePlaceOrder}
+                    onClick={handleCheckout}
                     disabled={isSubmitting || cartItems.length === 0}
                   >
                     {isSubmitting ? 'Creating Order...' : 'Checkout with Paystack'}
@@ -314,10 +353,17 @@ const Cart: React.FC = () => {
           )}
         </div>
         
+        <ShippingDialog
+          open={showShippingDialog}
+          onOpenChange={setShowShippingDialog}
+          onSubmit={handleShippingSubmit}
+          isSubmitting={isSubmitting}
+        />
+        
         <PaystackPaymentDialog
           open={showPaystackDialog}
           onOpenChange={setShowPaystackDialog}
-          total={totalCost}
+          total={shippingData ? calculateTotalWithShipping() : totalCost}
           customerEmail={user?.email || ''}
           onSuccess={handlePaymentSuccess}
           onError={handlePaymentError}
