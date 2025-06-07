@@ -91,7 +91,7 @@ const Index: React.FC = () => {
             <h2 className="text-3xl font-bold mb-8">New Arrivals</h2>
             
             {newArrivalsLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="bg-gray-200 animate-pulse rounded-lg h-80"></div>
                 ))}
