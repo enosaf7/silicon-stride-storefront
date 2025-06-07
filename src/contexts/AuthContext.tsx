@@ -47,8 +47,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
+        console.log('Auth state change:', event, newSession?.user?.email);
         setSession(newSession);
         setUser(newSession?.user ?? null);
+        
+        // Handle successful Google sign-in
+        if (event === 'SIGNED_IN' && newSession?.user) {
+          toast.success('Successfully logged in!');
+          // Navigate to home page after successful login
+          setTimeout(() => {
+            navigate('/');
+          }, 100);
+        }
         
         // Defer checking admin status to avoid auth deadlocks
         if (newSession?.user) {
@@ -73,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const checkAdminStatus = async (userId: string) => {
     try {
@@ -129,12 +139,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signInWithOAuth({ 
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}/`
         }
       });
       
       if (error) throw error;
-      // Toast and navigation happen after redirect back from Google
+      // Toast and navigation happen after redirect back from Google in the auth state change handler
     } catch (error: any) {
       toast.error(error.message || 'Error signing in with Google');
       throw error;
@@ -150,7 +160,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             first_name: firstName,
             last_name: lastName
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/`
         }
       });
 

@@ -47,7 +47,7 @@ supabase.rpc = (fn: string, ...args: any[]) => {
     if (bucketError && bucketError.message.includes('not found')) {
       const { error: createError } = await supabase.storage.createBucket('message-attachments', {
         public: true,
-        fileSizeLimit: 20971520, // 20MB
+        fileSizeLimit: 20971520, // 20MB,
       });
       
       if (createError) {
