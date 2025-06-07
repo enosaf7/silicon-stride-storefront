@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -102,8 +101,8 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ onSubmit, onCancel, isSubmi
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // Initialize map - using a placeholder token, user should replace with their own
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+    // Initialize map with your Mapbox public key
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2FmZmlyZS10ZWNoIiwiYSI6ImNtYmxvYnNhdzB5dXAyaXBqbmY1bnQ5MTcifQ.jxVxrCiDMoOYQgETt3Lo_A';
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
