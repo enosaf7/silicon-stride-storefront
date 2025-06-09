@@ -312,21 +312,7 @@ const Cart: React.FC = () => {
                 <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
                   <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
                   
-                  <div className="space-y-4 mb-6">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Subtotal</span>
-                      <span>{formatCedi(subtotal)}</span>
-                    </div>
-                    
-                    {shippingData && shippingData.deliveryType === 'delivery' && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Shipping</span>
-                        <span>{formatCedi(shippingData.shippingFee)}</span>
-                      </div>
-                    )}
-                    
-                    
-                  </div>
+                  
                   
                   <Button 
                     className="w-full bg-brand-orange hover:bg-brand-orange/90"
