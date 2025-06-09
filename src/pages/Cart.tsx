@@ -318,7 +318,12 @@ const Cart: React.FC = () => {
                       <span>{formatCedi(subtotal)}</span>
                     </div>
                     
-                    
+                    {shippingData && shippingData.deliveryType === 'delivery' && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Shipping</span>
+                        <span>{formatCedi(shippingData.shippingFee)}</span>
+                      </div>
+                    )}
                     
                     <div className="h-px bg-gray-200"></div>
                     
