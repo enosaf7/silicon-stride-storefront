@@ -310,16 +310,14 @@ const Cart: React.FC = () => {
               {/* Order Summary */}
               <div className="lg:col-span-1">
                 <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-                  <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
-                  
-                  
+                                    
                   
                   <Button 
                     className="w-full bg-brand-orange hover:bg-brand-orange/90"
                     onClick={handleCheckout}
                     disabled={isSubmitting || cartItems.length === 0}
                   >
-                    {isSubmitting ? 'Creating Order...' : 'Checkout with Paystack'}
+                    {isSubmitting ? 'Creating Order...' : 'Checkout'}
                   </Button>
                   
                   <p className="mt-4 text-sm text-gray-500 text-center">
