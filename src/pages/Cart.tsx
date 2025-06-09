@@ -49,7 +49,7 @@ const Cart: React.FC = () => {
     );
   }
 
-  const calculateTotalWithShipping = () => {
+  /*const calculateTotalWithShipping = () => {
     if (!shippingData) return totalCost;
     
     if (shippingData.deliveryType === 'pickup') {
@@ -57,7 +57,7 @@ const Cart: React.FC = () => {
     }
     
     return subtotal + shippingData.shippingFee;
-  };
+  };*/
 
   const handleCheckout = async () => {
     if (!user) {
