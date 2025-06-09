@@ -325,12 +325,7 @@ const Cart: React.FC = () => {
                       </div>
                     )}
                     
-                    <div className="h-px bg-gray-200"></div>
                     
-                    <div className="flex justify-between text-lg font-semibold">
-                      <span>Total</span>
-                      <span>{formatCedi(shippingData ? calculateTotalWithShipping() : totalCost)}</span>
-                    </div>
                   </div>
                   
                   <Button 
