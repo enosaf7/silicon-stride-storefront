@@ -56,7 +56,7 @@ const Cart: React.FC = () => {
       return subtotal; // No shipping fee for pickup
     }
     
-    return subtotal;
+    return subtotal + shippingData.shippingFee;
   };
 
   const handleCheckout = async () => {
