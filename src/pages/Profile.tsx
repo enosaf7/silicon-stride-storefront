@@ -1,43 +1,47 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import NavBar from '@/components/NavBar';
-import Footer from '@/components/Footer';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Camera, Save, User } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader, User } from 'lucide-react';
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
+import UserChatSection from '@/components/UserChat/UserChatSection';
 
-const Profile: React.FC = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+const Profile = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    address: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login');
+      return;
+    }
+
     if (user) {
       fetchProfile();
-      setEmail(user.email || '');
     }
-  }, [user]);
+  }, [user, loading, navigate]);
 
   const fetchProfile = async () => {
-    if (!user) return;
-
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', user?.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -45,81 +49,51 @@ const Profile: React.FC = () => {
       }
 
       if (data) {
-        setFirstName(data.first_name || '');
-        setLastName(data.last_name || '');
-        setPhone(data.phone || '');
-        setAddress(data.address || '');
-        // For now, we'll use the Dicebear avatar as profile image
-        setProfileImage(`https://api.dicebear.com/7.x/lorelei/svg?seed=${user.email}`);
+        setProfile({
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
+          phone: data.phone || '',
+          address: data.address || '',
+        });
       }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load profile data.",
-      });
+    } catch (error: any) {
+      toast.error('Failed to load profile: ' + error.message);
+    } finally {
+      setLoadingProfile(false);
     }
   };
 
-  const updateProfile = async () => {
+  const updateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!user) return;
 
-    setLoading(true);
+    setSaving(true);
     try {
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
-          first_name: firstName,
-          last_name: lastName,
-          email: email,
-          phone: phone,
-          address: address,
+          ...profile,
           updated_at: new Date().toISOString(),
         });
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Profile updated successfully!",
-      });
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update profile.",
-      });
+      toast.success('Profile updated successfully!');
+    } catch (error: any) {
+      toast.error('Failed to update profile: ' + error.message);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // For now, we'll just generate a new avatar based on the user's name
-      const newSeed = `${firstName}-${lastName}` || user?.email || 'default';
-      setProfileImage(`https://api.dicebear.com/7.x/lorelei/svg?seed=${newSeed}`);
-      toast({
-        title: "Profile Picture Updated",
-        description: "Your avatar has been generated based on your name.",
-      });
-    }
-  };
-
-  if (!user) {
+  if (loading || loadingProfile) {
     return (
       <div className="min-h-screen bg-gray-50">
         <NavBar />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold">Please log in to view your profile</h1>
-          </div>
+        <div className="flex items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-brand-orange" />
         </div>
-        <Footer />
       </div>
     );
   }
@@ -127,118 +101,88 @@ const Profile: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <NavBar />
-      
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Profile Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                My Profile
+                Profile Information
               </CardTitle>
-              <CardDescription>
-                Manage your personal information and preferences
-              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Profile Picture Section */}
-              <div className="flex flex-col items-center space-y-4">
-                <div className="relative">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage 
-                      src={profileImage || `https://api.dicebear.com/7.x/lorelei/svg?seed=${user.email}`}
-                      alt="Profile Picture"
+            <CardContent>
+              <form onSubmit={updateProfile} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="first_name">First Name</Label>
+                    <Input
+                      id="first_name"
+                      value={profile.first_name}
+                      onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
+                      placeholder="Enter your first name"
                     />
-                    <AvatarFallback>
-                      {firstName?.[0]}{lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <label 
-                    htmlFor="profile-image" 
-                    className="absolute bottom-0 right-0 bg-brand-orange text-white p-2 rounded-full cursor-pointer hover:bg-opacity-90 transition-colors"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </label>
-                  <input
-                    id="profile-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
+                  </div>
+                  <div>
+                    <Label htmlFor="last_name">Last Name</Label>
+                    <Input
+                      id="last_name"
+                      value={profile.last_name}
+                      onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
+                      placeholder="Enter your last name"
+                    />
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600 text-center">
-                  Click the camera icon to generate a new avatar
-                </p>
-              </div>
 
-              {/* Personal Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                <div>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Enter your first name"
+                    id="email"
+                    type="email"
+                    value={user?.email || ''}
+                    disabled
+                    className="bg-gray-100"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Enter your last name"
+                    id="phone"
+                    value={profile.phone}
+                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                    placeholder="Enter your phone number"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  disabled
-                  className="bg-gray-100"
-                />
-                <p className="text-sm text-gray-500">Email cannot be changed</p>
-              </div>
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={profile.address}
+                    onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                    placeholder="Enter your address"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter your phone number"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Enter your address"
-                />
-              </div>
-
-              <Button 
-                onClick={updateProfile} 
-                disabled={loading}
-                className="w-full"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {loading ? 'Saving...' : 'Save Changes'}
-              </Button>
+                <Button type="submit" disabled={saving} className="w-full">
+                  {saving ? (
+                    <>
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Update Profile'
+                  )}
+                </Button>
+              </form>
             </CardContent>
           </Card>
+
+          {/* Chat Section */}
+          <UserChatSection />
         </div>
       </div>
-
       <Footer />
     </div>
   );

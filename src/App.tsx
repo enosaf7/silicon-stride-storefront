@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +21,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WhatsAppButton from "./components/WhatsAppButton";
+import UserChatButton from "./components/UserChat/UserChatButton";
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -102,6 +102,9 @@ const App = () => (
             
             {/* WhatsApp Button - appears on all pages */}
             <WhatsAppButton />
+            
+            {/* User Chat Button - appears for logged-in users */}
+            <UserChatButton />
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>
