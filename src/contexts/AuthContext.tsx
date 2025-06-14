@@ -43,15 +43,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isMounted = true;
-
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        if (!isMounted) return;
-
-        console.log('Auth state change:', event, newSession?.user?.email || 'no user');
-        
+      (event, newSession) => {
+        console.log('Auth state change:', event, newSession?.user?.email);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
@@ -60,23 +55,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           toast.success('Successfully logged in!');
           // Navigate to home page after successful login
           setTimeout(() => {
-            if (isMounted) {
-              navigate('/');
-            }
+            navigate('/');
           }, 100);
         }
         
-        // Handle sign out
-        if (event === 'SIGNED_OUT') {
-          setIsAdmin(false);
-        }
-        
         // Defer checking admin status to avoid auth deadlocks
-        if (newSession?.user && event === 'SIGNED_IN') {
+        if (newSession?.user) {
           setTimeout(() => {
-            if (isMounted) {
-              checkAdminStatus(newSession.user.id);
-            }
+            checkAdminStatus(newSession.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
@@ -85,41 +71,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // THEN check for existing session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          // Clean up potentially corrupted auth state
-          cleanupAuthState();
-        } else if (currentSession && isMounted) {
-          setSession(currentSession);
-          setUser(currentSession.user);
-          
-          // Check admin status for existing session
-          setTimeout(() => {
-            if (isMounted) {
-              checkAdminStatus(currentSession.user.id);
-            }
-          }, 0);
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        cleanupAuthState();
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      
+      if (currentSession?.user) {
+        checkAdminStatus(currentSession.user.id);
       }
-    };
+      setLoading(false);
+    });
 
-    initializeAuth();
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const checkAdminStatus = async (userId: string) => {
@@ -129,12 +91,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         _role: 'admin'
       });
 
-      if (error) {
-        console.error('Error checking admin status:', error);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(!!data);
-      }
+      if (error) throw error;
+      setIsAdmin(!!data);
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
@@ -154,16 +112,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Pre-signin signout failed (expected):', err);
       }
       
-      const { data, error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      });
-      
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      
-      // Don't manually navigate here - let the auth state change handler do it
+      toast.success('Successfully logged in!');
+      navigate('/');
     } catch (error: any) {
-      console.error('Sign in error:', error);
       toast.error(error.message || 'Error signing in');
       throw error;
     }
@@ -187,7 +140,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success('Registration successful! Please check your email to verify your account.');
       navigate('/login');
     } catch (error: any) {
-      console.error('Sign up error:', error);
       toast.error(error.message || 'Error signing up');
       throw error;
     }
