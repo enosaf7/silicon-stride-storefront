@@ -17,6 +17,8 @@ interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   email: string | null;
+  phone: string | null;
+  address: string | null;
   created_at: string;
   order_count: number;
   role: string;
@@ -32,7 +34,7 @@ const UserManagement: React.FC = () => {
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      // Get the profiles
+      // Get the profiles with all fields including phone and address
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
