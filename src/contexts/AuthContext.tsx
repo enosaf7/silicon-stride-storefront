@@ -10,7 +10,6 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
@@ -51,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
-        // Handle successful Google sign-in
+        // Handle successful sign-in
         if (event === 'SIGNED_IN' && newSession?.user) {
           toast.success('Successfully logged in!');
           // Navigate to home page after successful login
@@ -123,34 +122,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signInWithGoogle = async () => {
-    try {
-      // Clean up existing auth state before signing in
-      cleanupAuthState();
-      
-      // Attempt to sign out globally before signing in
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        // Continue even if sign out fails
-        console.log('Pre-signin signout failed (expected):', err);
-      }
-      
-      const { error } = await supabase.auth.signInWithOAuth({ 
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
-      
-      if (error) throw error;
-      // Toast and navigation happen after redirect back from Google in the auth state change handler
-    } catch (error: any) {
-      toast.error(error.message || 'Error signing in with Google');
-      throw error;
-    }
-  };
-
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
       const { error } = await supabase.auth.signUp({
@@ -202,7 +173,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signIn, signInWithGoogle, signUp, signOut, isAdmin }}>
+    <AuthContext.Provider value={{ session, user, loading, signIn, signUp, signOut, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
