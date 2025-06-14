@@ -101,7 +101,7 @@ const UserTableActions: React.FC<UserTableActionsProps> = ({
               Activate
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialugContent>
+        </AlertDialogContent>
       </AlertDialog>
     </div>
   );
