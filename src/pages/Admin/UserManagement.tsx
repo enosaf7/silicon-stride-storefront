@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/Admin/AdminLayout';
-import UserProfileDialog from '@/components/Admin/UserProfileDialog';
+import UserProfileDialog from '@/components/Admin/UserProfile/UserProfileDialog';
 import { Loader, User, MessageCircle, Calendar, ShoppingBag } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
