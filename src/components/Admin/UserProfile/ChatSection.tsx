@@ -19,6 +19,7 @@ interface Message {
   content: string;
   created_at: string;
   is_read: boolean;
+  is_admin_message: boolean;
 }
 
 interface ChatSectionProps {
@@ -35,15 +36,14 @@ const ChatSection: React.FC<ChatSectionProps> = ({
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  // Fetch messages between admin and user
+  // Fetch messages between admin and user using the new function
   const { data: messages, refetch: refetchMessages } = useQuery({
-    queryKey: ['conversation-messages', userId, currentAdminId],
+    queryKey: ['admin-user-conversation', userId],
     queryFn: async () => {
       if (!userId) return [];
       
-      const { data, error } = await supabase.rpc('get_conversation_messages', {
-        user1: currentAdminId,
-        user2: userId
+      const { data, error } = await supabase.rpc('get_admin_user_conversation', {
+        target_user_id: userId
       });
 
       if (error) throw error;
@@ -57,17 +57,19 @@ const ChatSection: React.FC<ChatSectionProps> = ({
     if (!userId || !isOpen) return;
 
     const channel = supabase
-      .channel('conversation-messages')
+      .channel('admin-user-conversation')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages',
-          filter: `sender_id=in.(${currentAdminId},${userId}),receiver_id=in.(${currentAdminId},${userId})`
+          table: 'messages'
         },
-        () => {
-          refetchMessages();
+        (payload) => {
+          // Only refetch if the message is related to this conversation
+          if (payload.new.sender_id === userId || payload.new.receiver_id === userId) {
+            refetchMessages();
+          }
         }
       )
       .subscribe();
@@ -75,7 +77,16 @@ const ChatSection: React.FC<ChatSectionProps> = ({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, currentAdminId, isOpen, refetchMessages]);
+  }, [userId, isOpen, refetchMessages]);
+
+  // Mark user messages as read when admin opens the chat
+  useEffect(() => {
+    if (isOpen && userId) {
+      supabase.rpc('mark_user_messages_as_read', {
+        target_user_id: userId
+      });
+    }
+  }, [isOpen, userId]);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !userId || isSending) return;
@@ -113,7 +124,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({
     <div className="flex flex-col h-full min-h-0">
       <div className="flex items-center gap-2 mb-3">
         <MessageCircle className="h-5 w-5" />
-        <h3 className="text-lg font-semibold">Chat with User</h3>
+        <h3 className="text-lg font-semibold">Support Chat</h3>
       </div>
 
       {/* Messages */}
@@ -129,16 +140,21 @@ const ChatSection: React.FC<ChatSectionProps> = ({
               <div
                 key={message.id}
                 className={`flex ${
-                  message.sender_id === currentAdminId ? 'justify-end' : 'justify-start'
+                  message.is_admin_message ? 'justify-end' : 'justify-start'
                 }`}
               >
                 <div
                   className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    message.sender_id === currentAdminId
+                    message.is_admin_message
                       ? 'bg-brand-orange text-white'
                       : 'bg-gray-100 text-gray-900'
                   }`}
                 >
+                  {message.is_admin_message && (
+                    <div className="text-xs font-semibold mb-1 opacity-70">
+                      Support Team
+                    </div>
+                  )}
                   <p className="text-sm">{message.content}</p>
                   <div className="flex items-center gap-1 mt-1">
                     <Clock className="h-3 w-3 opacity-70" />

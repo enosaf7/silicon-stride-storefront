@@ -27,6 +27,7 @@ interface Message {
   content: string;
   created_at: string;
   is_read: boolean;
+  is_admin_message: boolean;
 }
 
 interface UserChatDialogProps {
@@ -38,7 +39,7 @@ const UserChatDialog: React.FC<UserChatDialogProps> = ({ userId }) => {
   const [isSending, setIsSending] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Fetch user messages
+  // Fetch user messages using the updated function
   const { data: messages = [], refetch: refetchMessages } = useQuery({
     queryKey: ['user-messages', userId],
     queryFn: async () => {
@@ -52,9 +53,9 @@ const UserChatDialog: React.FC<UserChatDialogProps> = ({ userId }) => {
     enabled: !!userId && isOpen
   });
 
-  // Count unread messages
+  // Count unread messages from admins
   const unreadCount = messages.filter(msg => 
-    msg.receiver_id === userId && !msg.is_read
+    msg.is_admin_message && msg.receiver_id === userId && !msg.is_read
   ).length;
 
   // Set up real-time subscription for messages
@@ -86,7 +87,7 @@ const UserChatDialog: React.FC<UserChatDialogProps> = ({ userId }) => {
   useEffect(() => {
     if (isOpen && messages.length > 0) {
       const unreadMessageIds = messages
-        .filter(msg => msg.receiver_id === userId && !msg.is_read)
+        .filter(msg => msg.is_admin_message && msg.receiver_id === userId && !msg.is_read)
         .map(msg => msg.id);
 
       if (unreadMessageIds.length > 0) {
@@ -162,7 +163,7 @@ const UserChatDialog: React.FC<UserChatDialogProps> = ({ userId }) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />
-            Messages from Support
+            Chat with Support
           </DialogTitle>
         </DialogHeader>
 
@@ -173,7 +174,7 @@ const UserChatDialog: React.FC<UserChatDialogProps> = ({ userId }) => {
               {messages.length === 0 ? (
                 <div className="text-center text-gray-500 py-8">
                   <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No messages yet.</p>
+                  <p>No messages yet. Start a conversation with our support team!</p>
                 </div>
               ) : (
                 messages.map((message) => (
@@ -190,6 +191,11 @@ const UserChatDialog: React.FC<UserChatDialogProps> = ({ userId }) => {
                           : 'bg-gray-100 text-gray-900'
                       }`}
                     >
+                      {message.is_admin_message && message.sender_id !== userId && (
+                        <div className="text-xs font-semibold mb-1 opacity-70">
+                          Support Team
+                        </div>
+                      )}
                       <p className="text-sm">{message.content}</p>
                       <div className="flex items-center gap-1 mt-1">
                         <Clock className="h-3 w-3 opacity-70" />
@@ -212,7 +218,7 @@ const UserChatDialog: React.FC<UserChatDialogProps> = ({ userId }) => {
           {/* Message Input */}
           <div className="flex gap-2">
             <Input
-              placeholder="Type your message..."
+              placeholder="Type your message to support..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}

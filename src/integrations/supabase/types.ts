@@ -55,6 +55,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          is_admin_message: boolean | null
           is_read: boolean
           receiver_id: string
           reply_to: string | null
@@ -64,6 +65,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          is_admin_message?: boolean | null
           is_read?: boolean
           receiver_id: string
           reply_to?: string | null
@@ -73,6 +75,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_admin_message?: boolean | null
           is_read?: boolean
           receiver_id?: string
           reply_to?: string | null
@@ -384,13 +387,25 @@ export type Database = {
     }
     Functions: {
       get_admin_conversations: {
-        Args: { admin_id: string }
+        Args: Record<PropertyKey, never> | { admin_id: string }
         Returns: {
           user_id: string
           first_name: string
           last_name: string
           unread_count: number
           last_message_at: string
+        }[]
+      }
+      get_admin_user_conversation: {
+        Args: { target_user_id: string }
+        Returns: {
+          id: string
+          sender_id: string
+          receiver_id: string
+          content: string
+          created_at: string
+          is_read: boolean
+          is_admin_message: boolean
         }[]
       }
       get_conversation_messages: {
@@ -413,6 +428,7 @@ export type Database = {
           content: string
           created_at: string
           is_read: boolean
+          is_admin_message: boolean
         }[]
       }
       has_role: {
@@ -424,6 +440,10 @@ export type Database = {
       }
       mark_messages_as_read: {
         Args: { user_id: string; message_ids: string[] }
+        Returns: undefined
+      }
+      mark_user_messages_as_read: {
+        Args: { target_user_id: string }
         Returns: undefined
       }
     }
