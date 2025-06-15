@@ -66,7 +66,6 @@ const UserManagement: React.FC = () => {
             setSelectedUser(null);
           }}
           onRefresh={refetch}
-          currentAdminId={user.id}
         />
       </div>
     </AdminLayout>
