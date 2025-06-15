@@ -37,16 +37,38 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // First get wishlist items
+      const { data: wishlistData, error: wishlistError } = await supabase
         .from('wishlists')
-        .select(`
-          *,
-          product:products(*)
-        `)
+        .select('*')
         .eq('user_id', user.id);
 
-      if (error) throw error;
-      setWishlistItems(data || []);
+      if (wishlistError) throw wishlistError;
+
+      if (!wishlistData || wishlistData.length === 0) {
+        setWishlistItems([]);
+        return;
+      }
+
+      // Then get product details for each wishlist item
+      const productIds = wishlistData.map(item => item.product_id);
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('*')
+        .in('id', productIds);
+
+      if (productsError) throw productsError;
+
+      // Combine wishlist items with product data
+      const combinedData: WishlistItem[] = wishlistData.map(wishlistItem => ({
+        id: wishlistItem.id,
+        user_id: wishlistItem.user_id,
+        product_id: wishlistItem.product_id,
+        created_at: wishlistItem.created_at,
+        product: productsData?.find(p => p.id === wishlistItem.product_id)
+      })).filter(item => item.product); // Only include items where we found the product
+
+      setWishlistItems(combinedData);
     } catch (error: any) {
       console.error('Error fetching wishlist:', error);
       toast.error('Failed to load wishlist');

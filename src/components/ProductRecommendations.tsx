@@ -41,7 +41,22 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
         // Limit to requested number
         filteredData = filteredData.slice(0, limit);
 
-        setRecommendations(filteredData);
+        // Map the data to match Product interface
+        const mappedData: Product[] = filteredData.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          price: item.price,
+          images: item.images,
+          rating: item.rating,
+          description: '', // Default empty description
+          sizes: [], // Default empty sizes array
+          colors: [], // Default empty colors array
+          stock: 1, // Default stock to 1 since we only return products with stock > 0
+          view_count: item.view_count
+        }));
+
+        setRecommendations(mappedData);
       } catch (error) {
         console.error('Error fetching recommendations:', error);
       } finally {

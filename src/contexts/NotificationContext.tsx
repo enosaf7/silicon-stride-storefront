@@ -40,10 +40,24 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
-      setNotifications(data || []);
+      
+      // Map the data to match Notification interface
+      const mappedData: Notification[] = (data || []).map((item: any) => ({
+        id: item.id,
+        user_id: item.user_id,
+        title: item.title,
+        message: item.message,
+        type: item.type as 'order_status' | 'low_stock' | 'promotion' | 'general',
+        is_read: item.is_read,
+        related_id: item.related_id,
+        created_at: item.created_at,
+      }));
+      
+      setNotifications(mappedData);
     } catch (error: any) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -59,7 +73,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         .eq('id', notificationId);
 
       if (error) throw error;
-      await fetchNotifications();
+      
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+      );
     } catch (error: any) {
       console.error('Error marking notification as read:', error);
     }
@@ -76,7 +93,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         .eq('is_read', false);
 
       if (error) throw error;
-      await fetchNotifications();
+      
+      setNotifications(prev => 
+        prev.map(n => ({ ...n, is_read: true }))
+      );
     } catch (error: any) {
       console.error('Error marking all notifications as read:', error);
     }
@@ -86,31 +106,29 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   useEffect(() => {
     fetchNotifications();
-  }, [user]);
 
-  // Set up real-time subscription
-  useEffect(() => {
-    if (!user) return;
+    // Set up real-time subscription
+    if (user) {
+      const channel = supabase
+        .channel('user-notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            fetchNotifications();
+          }
+        )
+        .subscribe();
 
-    const channel = supabase
-      .channel('notifications-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          fetchNotifications();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user]);
 
   return (

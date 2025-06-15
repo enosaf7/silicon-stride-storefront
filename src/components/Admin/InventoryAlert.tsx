@@ -41,9 +41,7 @@ const InventoryAlert: React.FC = () => {
           table: 'products',
         },
         () => {
-          fetch
-
-StockProducts();
+          fetchLowStockProducts();
         }
       )
       .subscribe();
