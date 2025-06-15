@@ -17,7 +17,6 @@ export interface Product {
   created_at?: string;
   updated_at?: string;
   new_arrival?: boolean;
-  low_stock_threshold?: number;
 }
 
 export interface Review {
@@ -71,56 +70,13 @@ export interface Order {
   user_id: string;
   total: number;
   shipping_address: string;
-  status: 'pending_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'payment_confirmed' | 'packed' | 'out_for_delivery';
+  status: 'pending_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   delivery_type?: 'delivery' | 'pickup';
   customer_name?: string;
   customer_phone?: string;
   shipping_fee?: number;
   region?: string;
   gps_coordinates?: string;
-  tracking_number?: string;
-  estimated_delivery_date?: string;
-  packed_at?: string;
-  shipped_at?: string;
-  delivered_at?: string;
   created_at: string;
   updated_at: string;
-}
-
-export interface WishlistItem {
-  id: string;
-  user_id: string;
-  product_id: string;
-  created_at: string;
-  product?: Product;
-}
-
-export interface Notification {
-  id: string;
-  user_id: string;
-  title: string;
-  message: string;
-  type: 'order_status' | 'low_stock' | 'promotion' | 'general';
-  is_read: boolean;
-  related_id?: string;
-  created_at: string;
-}
-
-export interface ProductView {
-  id: string;
-  user_id?: string;
-  product_id: string;
-  viewed_at: string;
-}
-
-export interface InventoryLog {
-  id: string;
-  product_id: string;
-  change_amount: number;
-  previous_stock: number;
-  new_stock: number;
-  reason: string;
-  admin_id?: string;
-  order_id?: string;
-  created_at: string;
 }

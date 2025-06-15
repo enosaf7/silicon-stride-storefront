@@ -18,11 +18,8 @@ import Help from "./pages/Help";
 import SizeGuide from "./pages/SizeGuide";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
-import Wishlist from "./pages/Wishlist";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
-import { WishlistProvider } from "./contexts/WishlistContext";
-import { NotificationProvider } from "./contexts/NotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WhatsAppButton from "./components/WhatsAppButton";
 
@@ -43,74 +40,69 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <NotificationProvider>
-            <WishlistProvider>
-              <CartProvider>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/profile" element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/help" element={<Help />} />
-                  <Route path="/size-guide" element={<SizeGuide />} />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/cart" element={
-                    <ProtectedRoute>
-                      <Cart />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  
-                  {/* Admin Routes */}
-                  <Route path="/admin" element={
-                    <ProtectedRoute adminOnly>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/products" element={
-                    <ProtectedRoute adminOnly>
-                      <ProductManagement />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/orders" element={
-                    <ProtectedRoute adminOnly>
-                      <OrderManagement />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/users" element={
-                    <ProtectedRoute adminOnly>
-                      <UserManagement />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/reviews" element={
-                    <ProtectedRoute adminOnly>
-                      <ReviewManagement />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/messages" element={
-                    <ProtectedRoute adminOnly>
-                      <Messages />
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-                
-                {/* WhatsApp Button - appears on all pages */}
-                <WhatsAppButton />
-              </CartProvider>
-            </WishlistProvider>
-          </NotificationProvider>
+          <CartProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+              <Route path="/help" element={<Help />} />
+              <Route path="/size-guide" element={<SizeGuide />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/cart" element={
+                <ProtectedRoute>
+                  <Cart />
+                </ProtectedRoute>
+              } />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={
+                <ProtectedRoute adminOnly>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/products" element={
+                <ProtectedRoute adminOnly>
+                  <ProductManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/orders" element={
+                <ProtectedRoute adminOnly>
+                  <OrderManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/users" element={
+                <ProtectedRoute adminOnly>
+                  <UserManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/reviews" element={
+                <ProtectedRoute adminOnly>
+                  <ReviewManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/messages" element={
+                <ProtectedRoute adminOnly>
+                  <Messages />
+                </ProtectedRoute>
+              } />
+              
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            
+            {/* WhatsApp Button - appears on all pages */}
+            <WhatsAppButton />
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
