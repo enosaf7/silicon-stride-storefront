@@ -7,7 +7,6 @@ import {
   ShoppingCart, 
   Users, 
   Star, 
-  MessageSquare,
   Mail,
   LogOut 
 } from 'lucide-react';
@@ -61,11 +60,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: Star,
       label: 'Reviews',
       path: '/admin/reviews'
-    },
-    {
-      icon: MessageSquare,
-      label: 'Chat',
-      path: '/admin/chat'
     },
     {
       icon: Mail,

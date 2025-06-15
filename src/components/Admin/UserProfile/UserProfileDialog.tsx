@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import UserProfileInfo from './UserProfileInfo';
-import ChatSection from './ChatSection';
 
 interface UserProfile {
   id: string;
@@ -26,35 +25,25 @@ interface UserProfileDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onRefresh: () => void;
-  currentAdminId: string;
 }
 
 const UserProfileDialog: React.FC<UserProfileDialogProps> = ({
   user,
   isOpen,
   onClose,
-  onRefresh,
-  currentAdminId
+  onRefresh
 }) => {
   if (!user) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>User Profile</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
-          {/* User Profile Information */}
+        <div className="space-y-6">
           <UserProfileInfo user={user} />
-
-          {/* Chat Section */}
-          <ChatSection
-            userId={user.id}
-            currentAdminId={currentAdminId}
-            isOpen={isOpen}
-          />
         </div>
       </DialogContent>
     </Dialog>

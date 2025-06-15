@@ -22,7 +22,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WhatsAppButton from "./components/WhatsAppButton";
-import UserChatButton from "./components/UserChat/UserChatButton";
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -30,7 +29,6 @@ import ProductManagement from "./pages/Admin/ProductManagement";
 import OrderManagement from "./pages/Admin/OrderManagement";
 import UserManagement from "./pages/Admin/UserManagement";
 import ReviewManagement from "./pages/Admin/ReviewManagement";
-import AdminChat from "./pages/Admin/AdminChat";
 import Messages from "./pages/Admin/Messages";
 
 const queryClient = new QueryClient();
@@ -92,11 +90,6 @@ const App = () => (
                   <ReviewManagement />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/chat" element={
-                <ProtectedRoute adminOnly>
-                  <AdminChat />
-                </ProtectedRoute>
-              } />
               <Route path="/admin/messages" element={
                 <ProtectedRoute adminOnly>
                   <Messages />
@@ -109,9 +102,6 @@ const App = () => (
             
             {/* WhatsApp Button - appears on all pages */}
             <WhatsAppButton />
-            
-            {/* User Chat Button - appears for logged-in users */}
-            <UserChatButton />
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>

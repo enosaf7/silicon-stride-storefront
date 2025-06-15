@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader, User } from 'lucide-react';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import UserChatSection from '@/components/UserChat/UserChatSection';
 
 const Profile = () => {
   const { user, loading } = useAuth();
@@ -102,8 +101,7 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50">
       <NavBar />
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Profile Information */}
+        <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -178,9 +176,6 @@ const Profile = () => {
               </form>
             </CardContent>
           </Card>
-
-          {/* Chat Section */}
-          <UserChatSection />
         </div>
       </div>
       <Footer />
