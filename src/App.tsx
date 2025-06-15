@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,6 +31,7 @@ import OrderManagement from "./pages/Admin/OrderManagement";
 import UserManagement from "./pages/Admin/UserManagement";
 import ReviewManagement from "./pages/Admin/ReviewManagement";
 import AdminChat from "./pages/Admin/AdminChat";
+import Messages from "./pages/Admin/Messages";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +95,11 @@ const App = () => (
               <Route path="/admin/chat" element={
                 <ProtectedRoute adminOnly>
                   <AdminChat />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/messages" element={
+                <ProtectedRoute adminOnly>
+                  <Messages />
                 </ProtectedRoute>
               } />
               
