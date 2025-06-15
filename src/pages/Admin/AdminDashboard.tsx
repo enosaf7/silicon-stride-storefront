@@ -1,41 +1,54 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/Admin/AdminLayout';
 import DashboardStats from '@/components/Admin/DashboardStats';
 import RecentOrders from '@/components/Admin/RecentOrders';
 import PopularProducts from '@/components/Admin/PopularProducts';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { useAuth } from '@/contexts/AuthContext';
+import InventoryAlert from '@/components/Admin/InventoryAlert';
+import { Loader } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
-  const { user } = useAuth();
-
+  const { user, loading, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader className="h-8 w-8 animate-spin text-brand-orange" />
+      </div>
+    );
+  }
+  
+  if (!user || !isAdmin) {
+    navigate('/login');
+    return null;
+  }
+  
   return (
-    <ProtectedRoute adminOnly>
-      <AdminLayout>
-        <div className="p-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Dashboard Overview</h1>
-            <div className="mt-2 flex items-center gap-2">
-              <p className="text-gray-600">
-                Welcome back! This is a shared admin dashboard - all changes are visible to all administrators.
-              </p>
-              <div className="ml-auto flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-green-700 font-medium">Live Updates</span>
-              </div>
-            </div>
-          </div>
-          
-          <DashboardStats />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            <RecentOrders />
-            <PopularProducts />
-          </div>
+    <AdminLayout>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-gray-600 mt-1">
+            Welcome back! Here's what's happening with your store.
+          </p>
         </div>
-      </AdminLayout>
-    </ProtectedRoute>
+
+        {/* Inventory Alerts */}
+        <InventoryAlert />
+        
+        {/* Stats Overview */}
+        <DashboardStats />
+        
+        {/* Recent Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentOrders />
+          <PopularProducts />
+        </div>
+      </div>
+    </AdminLayout>
   );
 };
 

@@ -83,6 +83,42 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_logs: {
+        Row: {
+          admin_id: string | null
+          change_amount: number
+          created_at: string
+          id: string
+          new_stock: number
+          order_id: string | null
+          previous_stock: number
+          product_id: string
+          reason: string
+        }
+        Insert: {
+          admin_id?: string | null
+          change_amount: number
+          created_at?: string
+          id?: string
+          new_stock: number
+          order_id?: string | null
+          previous_stock: number
+          product_id: string
+          reason: string
+        }
+        Update: {
+          admin_id?: string | null
+          change_amount?: number
+          created_at?: string
+          id?: string
+          new_stock?: number
+          order_id?: string | null
+          previous_stock?: number
+          product_id?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -123,6 +159,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          related_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          related_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          related_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       order_items: {
         Row: {
@@ -177,17 +246,22 @@ export type Database = {
           created_at: string | null
           customer_name: string | null
           customer_phone: string | null
+          delivered_at: string | null
           delivery_type: string | null
+          estimated_delivery_date: string | null
           gps_coordinates: string | null
           id: string
           otp_code: string | null
+          packed_at: string | null
           payment_intent: string | null
           processed_by_admin: string | null
           region: string | null
+          shipped_at: string | null
           shipping_address: string
           shipping_fee: number | null
           status: string
           total: number
+          tracking_number: string | null
           updated_at: string | null
           user_id: string
         }
@@ -195,17 +269,22 @@ export type Database = {
           created_at?: string | null
           customer_name?: string | null
           customer_phone?: string | null
+          delivered_at?: string | null
           delivery_type?: string | null
+          estimated_delivery_date?: string | null
           gps_coordinates?: string | null
           id?: string
           otp_code?: string | null
+          packed_at?: string | null
           payment_intent?: string | null
           processed_by_admin?: string | null
           region?: string | null
+          shipped_at?: string | null
           shipping_address: string
           shipping_fee?: number | null
           status?: string
           total: number
+          tracking_number?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -213,19 +292,45 @@ export type Database = {
           created_at?: string | null
           customer_name?: string | null
           customer_phone?: string | null
+          delivered_at?: string | null
           delivery_type?: string | null
+          estimated_delivery_date?: string | null
           gps_coordinates?: string | null
           id?: string
           otp_code?: string | null
+          packed_at?: string | null
           payment_intent?: string | null
           processed_by_admin?: string | null
           region?: string | null
+          shipped_at?: string | null
           shipping_address?: string
           shipping_fee?: number | null
           status?: string
           total?: number
+          tracking_number?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      product_views: {
+        Row: {
+          id: string
+          product_id: string
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          user_id?: string | null
+          viewed_at?: string
         }
         Relationships: []
       }
@@ -239,6 +344,7 @@ export type Database = {
           featured: boolean | null
           id: string
           images: string[]
+          low_stock_threshold: number | null
           name: string
           new_arrival: boolean | null
           price: number
@@ -256,6 +362,7 @@ export type Database = {
           featured?: boolean | null
           id?: string
           images: string[]
+          low_stock_threshold?: number | null
           name: string
           new_arrival?: boolean | null
           price: number
@@ -273,6 +380,7 @@ export type Database = {
           featured?: boolean | null
           id?: string
           images?: string[]
+          low_stock_threshold?: number | null
           name?: string
           new_arrival?: boolean | null
           price?: number
@@ -414,6 +522,27 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -450,6 +579,18 @@ export type Database = {
           content: string
           created_at: string
           is_read: boolean
+        }[]
+      }
+      get_product_recommendations: {
+        Args: { target_user_id?: string; limit_count?: number }
+        Returns: {
+          id: string
+          name: string
+          category: string
+          price: number
+          images: string[]
+          rating: number
+          view_count: number
         }[]
       }
       get_user_messages: {

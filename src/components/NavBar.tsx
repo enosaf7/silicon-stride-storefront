@@ -1,168 +1,167 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, ShoppingCart, User, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import SearchBar from '@/components/SearchBar';
-import ProfileMenu from '@/components/ProfileMenu';
-import { ShoppingCart, Menu, X } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
+import ProfileMenu from './ProfileMenu';
+import SearchBar from './SearchBar';
+import NotificationBell from './NotificationBell';
 
 const NavBar: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
+  const { cartItems } = useCart();
+  const { wishlistItems } = useWishlist();
   const location = useLocation();
-  const isAdminPage = location.pathname.startsWith('/admin');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Don't show the navbar on the login or signup pages
-  if (location.pathname === '/login' || location.pathname === '/signup') {
-    return null;
-  }
-  
-  // Simplified admin header for admin pages
-  if (isAdminPage) {
-    return (
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="font-bold text-xl text-brand-orange">JE's Palace</span>
-          </Link>
-          
-          <div className="flex items-center gap-2">
-            {user && <ProfileMenu />}
-          </div>
-        </div>
-      </header>
-    );
-  }
-  
+  const navigate = useNavigate();
+
+  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const wishlistCount = wishlistItems.length;
+
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Products', path: '/products' },
+    { name: 'Categories', path: '/categories' },
+    { name: 'About', path: '/about' },
+    { name: 'Contact', path: '/contact' },
+  ];
+
+  const isActivePath = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex justify-between items-center">
+    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="font-bold text-lg sm:text-xl text-brand-orange">JE's Palace</span>
+          <Link to="/" className="flex-shrink-0">
+            <span className="text-2xl font-bold text-brand-orange">StyleHub</span>
           </Link>
-          
-          {/* Search Bar - hidden on mobile, shown in mobile menu */}
-          <div className="hidden lg:block flex-grow mx-4 max-w-md">
-            <SearchBar />
-          </div>
-          
+
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4">
-            <nav className="flex items-center gap-4">
-              <Link to="/products" className="text-gray-600 hover:text-brand-orange transition-colors">
-                Products
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                className={`text-sm font-medium transition-colors hover:text-brand-orange ${
+                  isActivePath(link.path)
+                    ? 'text-brand-orange border-b-2 border-brand-orange pb-1'
+                    : 'text-gray-700'
+                }`}
+              >
+                {link.name}
               </Link>
-              <Link to="/categories" className="text-gray-600 hover:text-brand-orange transition-colors">
-                Categories
-              </Link>
-              <Link to="/about" className="text-gray-600 hover:text-brand-orange transition-colors">
-                About
-              </Link>
-              <Link to="/contact" className="text-gray-600 hover:text-brand-orange transition-colors">
-                Contact
-              </Link>
-            </nav>
-            
-            {/* User Controls */}
-            <div className="flex items-center gap-2">
-              {user ? (
-                <>
-                  <Link to="/cart">
-                    <Button variant="ghost" size="icon" aria-label="Cart">
-                      <ShoppingCart className="h-5 w-5" />
-                    </Button>
-                  </Link>
-                  <ProfileMenu />
-                </>
-              ) : (
-                <Link to="/login">
-                  <Button>Login</Button>
-                </Link>
-              )}
-            </div>
+            ))}
           </div>
 
-          {/* Mobile Controls */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Search Bar - Desktop */}
+          <div className="hidden lg:flex flex-1 max-w-md mx-8">
+            <SearchBar />
+          </div>
+
+          {/* Right side icons */}
+          <div className="flex items-center space-x-4">
+            {/* Search Bar - Mobile */}
+            <div className="lg:hidden flex-1 max-w-xs">
+              <SearchBar />
+            </div>
+
+            {/* Wishlist */}
             {user && (
-              <Link to="/cart">
-                <Button variant="ghost" size="icon" aria-label="Cart">
-                  <ShoppingCart className="h-5 w-5" />
+              <Link to="/wishlist" className="relative">
+                <Button variant="ghost" size="icon">
+                  <Heart className="h-5 w-5" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-brand-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {wishlistCount > 9 ? '9+' : wishlistCount}
+                    </span>
+                  )}
                 </Button>
               </Link>
             )}
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+
+            {/* Notifications */}
+            {user && <NotificationBell />}
+
+            {/* Shopping Cart */}
+            <Link to="/cart" className="relative">
+              <Button variant="ghost" size="icon">
+                <ShoppingCart className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-brand-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemCount > 9 ? '9+' : cartItemCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+
+            {/* User Profile/Login */}
+            {user ? (
+              <ProfileMenu />
+            ) : (
+              <Button 
+                onClick={() => navigate('/login')} 
+                variant="ghost" 
+                size="icon"
+                className="text-gray-700 hover:text-brand-orange"
+              >
+                <User className="h-5 w-5" />
+              </Button>
+            )}
+
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
           </div>
         </div>
-        
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t pt-4">
-            {/* Mobile Search Bar */}
-            <div className="mb-4">
-              <SearchBar />
-            </div>
-            
-            {/* Mobile Navigation Links */}
-            <nav className="flex flex-col gap-3 mb-4">
-              <Link 
-                to="/products" 
-                className="text-gray-600 hover:text-brand-orange transition-colors py-2 px-2 rounded-md hover:bg-gray-50"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Products
-              </Link>
-              <Link 
-                to="/categories" 
-                className="text-gray-600 hover:text-brand-orange transition-colors py-2 px-2 rounded-md hover:bg-gray-50"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Categories
-              </Link>
-              <Link 
-                to="/about" 
-                className="text-gray-600 hover:text-brand-orange transition-colors py-2 px-2 rounded-md hover:bg-gray-50"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                About
-              </Link>
-              <Link 
-                to="/contact" 
-                className="text-gray-600 hover:text-brand-orange transition-colors py-2 px-2 rounded-md hover:bg-gray-50"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Contact
-              </Link>
-            </nav>
-            
-            {/* Mobile User Controls */}
-            <div className="border-t pt-4">
-              {user ? (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Welcome back!</span>
-                  <ProfileMenu />
-                </div>
-              ) : (
-                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full">Login</Button>
+
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    isActivePath(link.path)
+                      ? 'text-brand-orange bg-orange-50'
+                      : 'text-gray-700 hover:text-brand-orange hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              {user && (
+                <Link
+                  to="/wishlist"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-orange hover:bg-gray-50"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Wishlist ({wishlistCount})
                 </Link>
               )}
             </div>
           </div>
         )}
       </div>
-    </header>
+    </nav>
   );
 };
 

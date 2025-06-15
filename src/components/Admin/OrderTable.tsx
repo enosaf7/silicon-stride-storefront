@@ -30,6 +30,7 @@ interface Order {
   total: number;
   shipping_address: string;
   payment_intent: string | null;
+  tracking_number?: string;
   processed_by?: {
     first_name: string;
     last_name: string;
@@ -60,8 +61,12 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
         return 'bg-yellow-100 text-yellow-800';
       case 'processing':
         return 'bg-blue-100 text-blue-800';
-      case 'shipped':
+      case 'packed':
         return 'bg-purple-100 text-purple-800';
+      case 'shipped':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'out_for_delivery':
+        return 'bg-cyan-100 text-cyan-800';
       case 'delivered':
         return 'bg-green-100 text-green-800';
       case 'cancelled':
@@ -73,6 +78,26 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
 
   const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  const generateTrackingNumber = () => {
+    return 'SH' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100).toString().padStart(2, '0');
+  };
+
+  const createNotification = async (userId: string, title: string, message: string, orderId: string) => {
+    try {
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: userId,
+          title,
+          message,
+          type: 'order_status',
+          related_id: orderId,
+        });
+    } catch (error) {
+      console.error('Error creating notification:', error);
+    }
   };
 
   const handleProceedPayment = async (orderId: string) => {
@@ -91,6 +116,22 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
         .eq('id', orderId);
         
       if (error) throw error;
+
+      // Get order details for notification
+      const { data: orderData } = await supabase
+        .from('orders')
+        .select('user_id')
+        .eq('id', orderId)
+        .single();
+
+      if (orderData) {
+        await createNotification(
+          orderData.user_id,
+          'Payment Confirmed',
+          `Your payment has been confirmed. OTP: ${otp}`,
+          orderId
+        );
+      }
       
       toast.success(`Payment confirmed! OTP sent to customer: ${otp}`);
       onRefresh();
@@ -142,12 +183,28 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
   
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
+      const updateData: any = { 
+        status: newStatus,
+        processed_by_admin: user?.id
+      };
+
+      // Add tracking number when shipped
+      if (newStatus === 'shipped' && !orders.find(o => o.id === orderId)?.tracking_number) {
+        updateData.tracking_number = generateTrackingNumber();
+      }
+
+      // Add timestamps
+      if (newStatus === 'packed') {
+        updateData.packed_at = new Date().toISOString();
+      } else if (newStatus === 'shipped') {
+        updateData.shipped_at = new Date().toISOString();
+      } else if (newStatus === 'delivered') {
+        updateData.delivered_at = new Date().toISOString();
+      }
+
       const { error } = await supabase
         .from('orders')
-        .update({ 
-          status: newStatus,
-          processed_by_admin: user?.id
-        })
+        .update(updateData)
         .eq('id', orderId);
         
       if (error) throw error;
@@ -156,8 +213,30 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
       if (newStatus === 'shipped' || newStatus === 'delivered') {
         await reduceProductStock(orderId);
       }
+
+      // Get order details for notification
+      const { data: orderData } = await supabase
+        .from('orders')
+        .select('user_id, tracking_number')
+        .eq('id', orderId)
+        .single();
+
+      if (orderData) {
+        let notificationMessage = `Your order status has been updated to: ${newStatus.replace('_', ' ')}`;
+        
+        if (newStatus === 'shipped' && updateData.tracking_number) {
+          notificationMessage += `. Tracking number: ${updateData.tracking_number}`;
+        }
+
+        await createNotification(
+          orderData.user_id,
+          'Order Status Update',
+          notificationMessage,
+          orderId
+        );
+      }
       
-      toast.success(`Order status updated to ${newStatus}${(newStatus === 'shipped' || newStatus === 'delivered') ? ' and stock reduced' : ''}`);
+      toast.success(`Order status updated to ${newStatus.replace('_', ' ')}${(newStatus === 'shipped' || newStatus === 'delivered') ? ' and stock reduced' : ''}`);
       onRefresh();
     } catch (error: any) {
       toast.error(`Failed to update order status: ${error.message}`);
@@ -175,6 +254,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
               <TableHead>Date</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Tracking</TableHead>
               <TableHead>Processed By</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -182,7 +262,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                   No orders found
                 </TableCell>
               </TableRow>
@@ -220,11 +300,22 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, onViewDetails, onRefres
                           <SelectItem value="payment_confirmed">Payment Confirmed</SelectItem>
                           <SelectItem value="pending">Pending</SelectItem>
                           <SelectItem value="processing">Processing</SelectItem>
+                          <SelectItem value="packed">Packed</SelectItem>
                           <SelectItem value="shipped">Shipped</SelectItem>
+                          <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
                           <SelectItem value="delivered">Delivered</SelectItem>
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {order.tracking_number ? (
+                      <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
+                        {order.tracking_number}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400">-</span>
                     )}
                   </TableCell>
                   <TableCell>
